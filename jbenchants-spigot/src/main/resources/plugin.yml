@@ -1,0 +1,9 @@
+name: JBEnchants
+version: '${project.version}'
+main: de.exo.jbenchants.Main
+authors: [Exoskelett]
+depend: [NBTAPI]
+
+commands:
+  jbe:
+  test:

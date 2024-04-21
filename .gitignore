@@ -1,0 +1,3 @@
+# Project exclude paths
+/jbenchants-api/target/
+/jbenchants-spigot/target/
