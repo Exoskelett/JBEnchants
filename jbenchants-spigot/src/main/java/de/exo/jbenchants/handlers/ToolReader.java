@@ -15,9 +15,9 @@ import java.util.List;
 
 public class ToolReader implements Listener {
     API api = Main.instance.api;
-    JBEnchantNBT nbt = Main.instance.nbt;
-    JBEnchantLore lore = Main.instance.lore;
-    JBEnchantHandler handler = Main.instance.handler;
+    JBEnchantData.NBT nbt = Main.instance.nbt;
+    JBEnchantData.Lore lore = Main.instance.lore;
+    JBEnchantData.Handler handler = Main.instance.handler;
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();

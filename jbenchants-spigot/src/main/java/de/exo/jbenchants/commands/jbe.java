@@ -2,6 +2,7 @@ package de.exo.jbenchants.commands;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
+import de.exo.jbenchants.handlers.JBEnchantData;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.command.Command;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class jbe implements CommandExecutor, TabCompleter {
     API api = Main.instance.api;
-    JBEnchantNBT nbt = Main.instance.nbt;
+    JBEnchantData.NBT nbt = Main.instance.nbt;
 
     String addSyntax = "/jbe add <name> [rarity] [level_cap] [proc_chance]";
     String addEnchantSyntax = "/jbe enchant add <enchantment> <level>";

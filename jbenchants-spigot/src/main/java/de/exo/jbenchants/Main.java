@@ -4,10 +4,7 @@ package de.exo.jbenchants;
 //import com.comphenix.protocol.ProtocolManager;
 import de.exo.jbenchants.commands.jbe;
 import de.exo.jbenchants.commands.test;
-import de.exo.jbenchants.handlers.JBEnchantHandler;
-import de.exo.jbenchants.handlers.JBEnchantLore;
-import de.exo.jbenchants.handlers.JBEnchantNBT;
-import de.exo.jbenchants.handlers.ToolReader;
+import de.exo.jbenchants.handlers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,9 +14,9 @@ import java.io.File;
 
 public class Main extends JavaPlugin {
     public API api;
-    public JBEnchantNBT nbt = new JBEnchantNBT();
-    public JBEnchantLore lore = new JBEnchantLore();
-    public JBEnchantHandler handler = new JBEnchantHandler();
+    public JBEnchantData.NBT nbt;
+    public JBEnchantData.Lore lore;
+    public JBEnchantData.Handler handler;
     public static Main instance;
     //public static ProtocolManager manager;
 

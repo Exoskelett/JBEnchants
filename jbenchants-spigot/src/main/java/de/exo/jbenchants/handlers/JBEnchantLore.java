@@ -9,7 +9,7 @@ import java.util.List;
 
 public class JBEnchantLore implements JBEnchantData.Lore {
     API api = Main.instance.api;
-    JBEnchantNBT nbt = Main.instance.nbt;
+    JBEnchantData.NBT nbt = Main.instance.nbt;
 
     @Override
     public List<Integer> getEnchantmentLoreSlots(ItemStack item) {

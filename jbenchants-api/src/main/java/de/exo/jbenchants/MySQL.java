@@ -43,7 +43,7 @@ public class MySQL implements API {
         try {
             // enchantments
             PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS enchantments "
-                    + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), level_cap int, proc_chance double, active boolean, PRIMARY KEY (id))");
+                    + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), level_cap int, proc_chance double, active boolean, notify boolean, PRIMARY KEY (id))");
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
