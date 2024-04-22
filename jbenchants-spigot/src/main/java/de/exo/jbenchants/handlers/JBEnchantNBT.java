@@ -2,14 +2,13 @@ package de.exo.jbenchants.handlers;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.tr7zw.nbtapi.NBT;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EnchantsNBT {
+public class JBEnchantNBT implements JBEnchantData.NBT {
     API api = Main.instance.api;
     public void addEnchantmentLevel(ItemStack item, String name, int level) {
         NBTItem nbti = new NBTItem(item);
@@ -49,16 +48,16 @@ public class EnchantsNBT {
         System.out.println("removeEnchantment");
     }
     public void removeEnchantmentLevel(ItemStack item, String name, int level) {
-        NBT.modify(item, JBEnchantData.class, (proxy) -> {
-            for (int i = 0; i < proxy.getJBEnchants(item).size(); i++) {
-                if (proxy.getJBEnchants(item).get(i).getName().equals(name)) {
-                    proxy.getJBEnchants(item).get(i).removeLevel(level);
-                    if (proxy.getJBEnchants(item).get(i).getLevel() < 1) {
-                        removeEnchantment(item, name);
-                    }
-                }
+        NBTItem nbti = new NBTItem(item);
+        if (nbti.hasTag(name)) {
+            if (nbti.getInteger(name) <= level) {
+                removeEnchantment(item, name);
+                return;
+            } else {
+                nbti.setInteger(name, nbti.getInteger(name)-level);
+                nbti.applyNBT(item);
             }
-        });
+        }
     }
     public int getEnchantmentLevel(ItemStack item, String name) {
         NBTItem nbti = new NBTItem(item);

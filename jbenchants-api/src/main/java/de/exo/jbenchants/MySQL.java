@@ -8,10 +8,10 @@ import java.util.UUID;
 public class MySQL implements API {
 
     private Connection connection;
-    private String host;
-    private String database;
-    private String username;
-    private String password;
+    private final String host;
+    private final String database;
+    private final String username;
+    private final String password;
 
     public MySQL(String host, String database, String username, String password) {
         this.host = host;
@@ -21,13 +21,11 @@ public class MySQL implements API {
     }
 
     public Connection getConnection() throws SQLException {
-        if (connection != null && connection.isValid(1)) {
-            return connection;
-        } else {
+        if (connection == null || !connection.isValid(1)) {
             connection = DriverManager.getConnection("jdbc:mysql://" + host
                     + "/" + database + "?useSSL=false", username, password);
-            return connection;
         }
+        return connection;
     }
 
     @Override
@@ -45,7 +43,7 @@ public class MySQL implements API {
         try {
             // enchantments
             PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS enchantments "
-                    + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), level_cap int, proc_chance double, PRIMARY KEY (id))");
+                    + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), level_cap int, proc_chance double, active boolean, PRIMARY KEY (id))");
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -55,12 +53,14 @@ public class MySQL implements API {
     @Override
     public void addEnchantment(String name, String display_name, String rarity, int level_cap, double proc_chance) {
         try {
-            PreparedStatement ps = getConnection().prepareStatement("INSERT IGNORE INTO enchantments (name, display_name, rarity, level_cap, proc_chance) VALUES (?,?,?,?,?)");
+            PreparedStatement ps = getConnection().prepareStatement("INSERT IGNORE INTO enchantments (name, display_name, rarity, level_cap, proc_chance, active, notify) VALUES (?,?,?,?,?,?,?)");
             ps.setString(1, name);
             ps.setString(2, display_name);
             ps.setString(3, rarity);
             ps.setInt(4, level_cap);
             ps.setDouble(5, proc_chance);
+            ps.setBoolean(6, false);
+            ps.setBoolean(7, false);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -77,6 +77,22 @@ public class MySQL implements API {
                 enchants.add(getEnchantsResult.getString("name"));
             }
             return enchants;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public String getName(String displayName) {
+        try {
+            PreparedStatement getName = getConnection().prepareStatement("SELECT * FROM enchantments WHERE display_name=?");
+            getName.setString(1, displayName);
+            ResultSet getNameResult = getName.executeQuery();
+            if (getNameResult.next()) {
+                return getNameResult.getString("name");
+            }
+            return null;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -128,6 +144,51 @@ public class MySQL implements API {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    @Override
+    public double getProcChance(String name) {
+        try {
+            PreparedStatement getProcChance = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
+            getProcChance.setString(1, name);
+            ResultSet getProcChanceResult = getProcChance.executeQuery();
+            if (getProcChanceResult.next()) {
+                return getProcChanceResult.getDouble("proc_chance");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean check(String name) {
+        try {
+            PreparedStatement check = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
+            check.setString(1, name);
+            ResultSet checkResult = check.executeQuery();
+            if (checkResult.next()) {
+                return checkResult.getBoolean("active");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkNotify(String name) {
+        try {
+            PreparedStatement checkNotify = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
+            checkNotify.setString(1, name);
+            ResultSet checkNotifyResult = checkNotify.executeQuery();
+            if (checkNotifyResult.next()) {
+                return checkNotifyResult.getBoolean("notify");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override

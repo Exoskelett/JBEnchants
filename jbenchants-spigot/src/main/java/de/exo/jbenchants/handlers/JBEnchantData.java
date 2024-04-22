@@ -1,20 +1,27 @@
 package de.exo.jbenchants.handlers;
 
-import de.tr7zw.nbtapi.wrapper.NBTProxy;
-import de.tr7zw.nbtapi.wrapper.ProxyList;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public interface JBEnchantData extends NBTProxy {
+import java.util.List;
 
-    public ProxyList<JBEnchant> getJBEnchants(ItemStack item);
+public interface JBEnchantData {
+    public interface Handler {
+        public void procc(Player player, ItemStack tool, String name, Block block);
+        public void activate(Player player, ItemStack tool, String name, Block block);
+    }
+    public interface Lore {
+        public List<Integer> getEnchantmentLoreSlots(ItemStack item);
 
-    public interface JBEnchants extends NBTProxy {
-        public void setName(String name);
-        public String getName();
-        public void addLevel(int level);
-        public void removeLevel(int level);
-        public void setLevel(int level);
-        public int getLevel();
-        public String toString();
+        public void updateLore(ItemStack item);
+    }
+    public interface NBT {
+        public void addEnchantmentLevel(ItemStack item, String name, int level);
+        public void setEnchantmentLevel(ItemStack item, String name, int level);
+        public void removeEnchantment(ItemStack item, String name);
+        public void removeEnchantmentLevel(ItemStack item, String name, int level);
+        public int getEnchantmentLevel(ItemStack item, String name);
+        public List<String> getEnchants(ItemStack item);
     }
 }

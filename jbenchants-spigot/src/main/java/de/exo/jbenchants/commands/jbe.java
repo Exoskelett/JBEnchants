@@ -2,8 +2,7 @@ package de.exo.jbenchants.commands;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.exo.jbenchants.handlers.EnchantsNBT;
-import de.exo.jbenchants.handlers.JBEnchant;
+import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,9 +18,12 @@ import java.util.List;
 
 public class jbe implements CommandExecutor, TabCompleter {
     API api = Main.instance.api;
-    EnchantsNBT nbt = Main.instance.nbtHandler;
+    JBEnchantNBT nbt = Main.instance.nbt;
 
-    String addSyntax = "/jbe add <name> <rarity> <level_cap> <proc_chance>";
+    String addSyntax = "/jbe add <name> [rarity] [level_cap] [proc_chance]";
+    String addEnchantSyntax = "/jbe enchant add <enchantment> <level>";
+    String setEnchantSyntax = "/jbe enchant set <enchantment> <level>";
+    String removeEnchantSyntax = "/jbe enchant remove <enchantment>";
     String enchantSyntax = "/jbe enchant <player> <name> <level>";
 
     @Override
@@ -63,7 +65,7 @@ public class jbe implements CommandExecutor, TabCompleter {
                             String name = args[1].toLowerCase(), action = args[2];
                             int level = Integer.parseInt(args[3]);
                             ItemStack item = player.getItemInHand();
-                            switch (args[2]) {
+                            switch (args[1]) {
                                 case "add":
                                     if (api.exists(name)) {
                                         nbt.addEnchantmentLevel(item, name, level);
@@ -93,7 +95,7 @@ public class jbe implements CommandExecutor, TabCompleter {
                             } else
                                 sender.sendMessage("§cPlease use one of the following rarities: <common, rare, epic, legendary>");
                         } else
-                            sender.sendMessage("§cThis enchantment already exists. Want to edit the enchantment? Try '/jbe edit'.");
+                            sender.sendMessage("§cThis enchantment already exists. You can edit its basic attributes in the database.");
                 }
         }
         return false;
@@ -124,22 +126,32 @@ public class jbe implements CommandExecutor, TabCompleter {
                     break;
                 case "enchant":
                         Player player = (Player) sender;
+                        ItemStack item = player.getInventory().getItemInMainHand();
                         switch (args.length) {
                             case 2:
-                                completer.addAll(api.getEnchantments());
+                                completer.add("add");
+                                completer.add("set");
+                                completer.add("remove");
                                 return completer;
                             case 3:
-                                if (!new NBTItem(player.getItemInHand()).getInteger(args[1]).equals(api.getLevelCap(args[1])))
-                                    completer.add("add");
-                                completer.add("set");
-                                if (new NBTItem(player.getItemInHand()).hasTag(args[1]))
-                                    completer.add("remove");
-                                return completer;
+                                List<String> enchants = api.getEnchantments();
+                                if (args[1].equals("add") || args[1].equals("set")) {
+                                    for (int i = 0; i < enchants.size(); i++) {
+                                        if (api.check(enchants.get(i)))
+                                            completer.add(enchants.get(i));
+                                    }
+                                    return completer;
+                                } else if (args[1].equals("remove")) {
+                                    if (nbt.getEnchants(item) != null) {
+                                        completer.addAll(nbt.getEnchants(item));
+                                        return completer;
+                                    }
+                                }
                             case 4:
-                                switch (args[2]) {
+                                switch (args[1]) {
                                     case "add":
-                                        if (new NBTItem(player.getItemInHand()).getInteger(args[1]) < api.getLevelCap(args[1])) {
-                                            for (int i = 1; i <= (api.getLevelCap(args[1])-new NBTItem(player.getItemInHand()).getInteger(args[1])); i++) {
+                                        if (nbt.getEnchantmentLevel(item, args[2]) < api.getLevelCap(args[2])) {
+                                            for (int i = 1; i <= (api.getLevelCap(args[2])-nbt.getEnchantmentLevel(item, args[2])); i++) {
                                                 completer.add("" + i);
                                             }
                                         }

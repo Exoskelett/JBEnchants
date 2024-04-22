@@ -13,10 +13,18 @@ public interface API {
 
     List<String> getEnchantments();
 
+    String getName(String displayName);
+
     String getDisplayName(String name);
 
     int getLevelCap(String name);
 
+
+    double getProcChance(String name);
+
+    boolean check(String name);
+
+    boolean checkNotify(String name);
 
     boolean exists(String name);
 
