@@ -8,3 +8,12 @@ _All commands include TabCompleters!_
 `/jbe add <enchant> <level_cap> <proc_chance>` adds the basic parameters for a new enchantment
 
 `/jbe enchant <enchant> <add/set/remove> <level>` configures an enchantment of the item you are currently holding
+
+# To-Do
+- [x] Add lore handler
+  - [ ] Testing
+- [ ] Add messages to MySQL
+- [ ] Add more ingame control features via '/jbe'
+- [ ] Add crystals/scrolls/scrappers
+  - [ ] Implement handlers
+  - [ ] Implement GUIs
