@@ -1,7 +1,5 @@
 package de.exo.jbenchants;
 
-//import com.comphenix.protocol.ProtocolLibrary;
-//import com.comphenix.protocol.ProtocolManager;
 import de.exo.jbenchants.commands.jbe;
 import de.exo.jbenchants.commands.test;
 import de.exo.jbenchants.handlers.*;
@@ -14,19 +12,15 @@ import java.io.File;
 
 public class Main extends JavaPlugin {
     public API api;
-    public JBEnchantData.NBT nbt;
-    public JBEnchantData.Lore lore;
-    public JBEnchantData.Handler handler;
+    public JBEnchantNBT nbt;
+    public JBEnchantLore lore;
+    public JBEnchantHandler handler;
     public static Main instance;
-    //public static ProtocolManager manager;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         instance = this;
-
-        // ProtocolLib
-        //manager = ProtocolLibrary.getProtocolManager();
 
         // MySQL-Database
         Configuration config = YamlConfiguration.loadConfiguration(new File("./plugins/JBEnchants", "config.yml"));
@@ -37,6 +31,9 @@ public class Main extends JavaPlugin {
         String password = config.getString("password");
 
         this.api = new MySQL(host, database, username, password);
+        nbt = new JBEnchantNBT();
+        lore = new JBEnchantLore();
+        handler = new JBEnchantHandler();
 
         if (api.isConnected()) {
             Bukkit.getLogger().info("[JBEnchants] MySQL-Database is connected.");

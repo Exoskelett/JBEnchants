@@ -3,7 +3,6 @@ package de.exo.jbenchants;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class MySQL implements API {
 
@@ -42,9 +41,31 @@ public class MySQL implements API {
     public void createDefaultTables() {
         try {
             // enchantments
-            PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS enchantments "
+            PreparedStatement ps1 = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS enchantments "
                     + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), level_cap int, proc_chance double, active boolean, notify boolean, PRIMARY KEY (id))");
-            ps.executeUpdate();
+            ps1.executeUpdate();
+            PreparedStatement ps2 = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS rarities "
+                    + "(id int NOT NULL AUTO_INCREMENT, rarity varchar(20), prefix varchar(20), color varchar(10), PRIMARY KEY (id))");
+            ps2.executeUpdate();
+
+            PreparedStatement psCheck = getConnection().prepareStatement("SELECT COUNT(*) FROM rarities");
+            ResultSet rs = psCheck.executeQuery();
+            rs.next();
+            int rowCount = rs.getInt(1);
+            psCheck.close();
+            if (rowCount == 0) {
+            String[] rarities = {"legendary", "epic", "rare", "common", "special"};
+            String[] colors = {"§5", "§b", "§6", "§f", "§7"};
+
+            for (int i = 0; i < rarities.length; i++) {
+                String query = "INSERT IGNORE INTO rarities (rarity, color) VALUES (?,?)";
+                PreparedStatement ps = getConnection().prepareStatement(query);
+                ps.setString(1, rarities[i]);
+                ps.setString(2, colors[i]);
+                ps.executeUpdate();
+                ps.close();
+            }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -86,6 +107,7 @@ public class MySQL implements API {
     @Override
     public String getName(String displayName) {
         try {
+            displayName = displayName.substring(2);
             PreparedStatement getName = getConnection().prepareStatement("SELECT * FROM enchantments WHERE display_name=?");
             getName.setString(1, displayName);
             ResultSet getNameResult = getName.executeQuery();
@@ -106,25 +128,24 @@ public class MySQL implements API {
             getName.setString(1, name);
             ResultSet getNameResult = getName.executeQuery();
             if (getNameResult.next()) {
-                String s = "";
-                switch (getNameResult.getString("rarity")) {
-                    case "common":
-                        s += "§f";
-                        break;
-                    case "rare":
-                        s += "§6";
-                        break;
-                    case "epic":
-                        s += "§b";
-                        break;
-                    case "legendary":
-                        s += "§5";
-                        break;
-                }
-                s += getNameResult.getString("display_name");
-                return s;
+                return getNameResult.getString("display_name");
             }
             return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public String getRarity(String name) {
+        try {
+            PreparedStatement getRarity = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
+            getRarity.setString(1, name);
+            ResultSet getRarityResult = getRarity.executeQuery();
+            if (getRarityResult.next()) {
+                return getRarityResult.getString("rarity");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -162,7 +183,7 @@ public class MySQL implements API {
     }
 
     @Override
-    public boolean check(String name) {
+    public boolean checkActive(String name) {
         try {
             PreparedStatement check = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
             check.setString(1, name);
@@ -194,43 +215,54 @@ public class MySQL implements API {
     @Override
     public boolean exists(String name) {
         try {
-            PreparedStatement getLevelCap = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
-            getLevelCap.setString(1, name);
-            ResultSet getLevelCapResult = getLevelCap.executeQuery();
-            if (getLevelCapResult.next()) {
-                getLevelCapResult.close();
+            PreparedStatement exists = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
+            exists.setString(1, name);
+            ResultSet existsResult = exists.executeQuery();
+            if (existsResult.next()) {
+                existsResult.close();
                 return true;
             }
-            getLevelCapResult.close();
+            existsResult.close();
             return false;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public String getEnchantmentColor(String rarity) {
+        try {
+            PreparedStatement getEnchantmentColor = getConnection().prepareStatement("SELECT * FROM rarities WHERE rarity=?");
+            getEnchantmentColor.setString(1, rarity);
+            ResultSet getEnchantmentColorResult = getEnchantmentColor.executeQuery();
+            if (getEnchantmentColorResult.next()) {
+                return getEnchantmentColorResult.getString("color");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public String getEnchantmentPrefix(String rarity) {
+        try {
+            PreparedStatement getEnchantmentPrefix = getConnection().prepareStatement("SELECT * FROM rarities WHERE rarity=?");
+            getEnchantmentPrefix.setString(1, rarity);
+            ResultSet getEnchantmentPrefixResult = getEnchantmentPrefix.executeQuery();
+            if (getEnchantmentPrefixResult.next()) {
+                return getEnchantmentPrefixResult.getString("prefix");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 
 
     // other code:
-    @Override
-    public boolean exists(UUID player) {
-        try {
-            PreparedStatement exists = getConnection().prepareStatement("SELECT * FROM players WHERE UUID=?");
-            exists.setString(1, player.toString());
-            ResultSet existsResults = exists.executeQuery();
-            // Does enchantment exist in database?
-            if (existsResults.next()) {
-                existsResults.close();
-                return true;
-            }
-            existsResults.close();
-            return false;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     @Override
     public void setLobbySpawn(String world, String location) {
         try {

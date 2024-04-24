@@ -14,25 +14,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ToolReader implements Listener {
+
     API api = Main.instance.api;
-    JBEnchantData.NBT nbt = Main.instance.nbt;
-    JBEnchantData.Lore lore = Main.instance.lore;
-    JBEnchantData.Handler handler = Main.instance.handler;
+    JBEnchantNBT nbt = Main.instance.nbt;
+    JBEnchantLore lore = Main.instance.lore;
+    JBEnchantHandler handler = Main.instance.handler;
+
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        ItemStack tool = player.getActiveItem();
-        List<String> enchants = nbt.getEnchants(tool);
+        ItemStack item = player.getInventory().getItemInMainHand();
+        List<String> enchants = nbt.getEnchants(item);
         Block block = event.getBlock();
         if (enchants != null) {
-            lore.updateLore(tool);
+            List<String> procced = new ArrayList<>();
             for (int i = 0; i < enchants.size(); i++) {
                 String enchant = enchants.get(i);
-                double chance = api.getProcChance(enchant)*nbt.getEnchantmentLevel(tool, enchant);
+                double chance = api.getProcChance(enchant)*nbt.getEnchantmentLevel(item, enchant)/100;
                 if (Math.random() <= chance) {
-                    handler.procc(player, tool, enchant, block);
+                    procced.add(enchant);
                 }
             }
+            if (!procced.isEmpty())
+                handler.procc(player, item, procced, block);
         }
     }
 }

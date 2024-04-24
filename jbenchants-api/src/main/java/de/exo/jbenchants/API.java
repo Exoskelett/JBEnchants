@@ -1,7 +1,6 @@
 package de.exo.jbenchants;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface API {
 
@@ -17,18 +16,22 @@ public interface API {
 
     String getDisplayName(String name);
 
-    int getLevelCap(String name);
+    String getRarity(String name);
 
+    int getLevelCap(String name);
 
     double getProcChance(String name);
 
-    boolean check(String name);
+    boolean checkActive(String name);
 
     boolean checkNotify(String name);
 
     boolean exists(String name);
 
-    boolean exists(UUID player);
+
+    String getEnchantmentColor(String name);
+
+    String getEnchantmentPrefix(String name);
 
     void setLobbySpawn(String world, String location);
 
