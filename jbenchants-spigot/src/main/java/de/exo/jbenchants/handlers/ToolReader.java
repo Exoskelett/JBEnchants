@@ -30,9 +30,11 @@ public class ToolReader implements Listener {
             List<String> procced = new ArrayList<>();
             for (int i = 0; i < enchants.size(); i++) {
                 String enchant = enchants.get(i);
-                double chance = api.getProcChance(enchant)*nbt.getEnchantmentLevel(item, enchant)/100;
-                if (Math.random() <= chance) {
-                    procced.add(enchant);
+                if (api.check(enchant, "proccable")) {
+                    double chance = api.getProcChance(enchant)*nbt.getEnchantmentLevel(item, enchant)/100;
+                    if (Math.random() <= chance) {
+                        procced.add(enchant);
+                    }
                 }
             }
             if (!procced.isEmpty())

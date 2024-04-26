@@ -2,7 +2,7 @@ package de.exo.jbenchants.commands;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.exo.jbenchants.handlers.JBEnchantData;
+import de.exo.jbenchants.handlers.JBEnchantLore;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.command.Command;
@@ -14,7 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class test implements CommandExecutor {
     API api = Main.instance.api;
-    JBEnchantData.NBT nbt = Main.instance.nbt;
+    JBEnchantNBT nbt = Main.instance.nbt;
+    JBEnchantLore lore = Main.instance.lore;
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
 
@@ -22,11 +24,30 @@ public class test implements CommandExecutor {
             Player player = (Player) sender;
             ItemStack item = player.getInventory().getItemInMainHand();
             NBTItem nbti = new NBTItem(item);
-            if (nbti.hasTag("jbenchants")) {
-                player.sendMessage(nbti.getInteger("jbenchants").toString());
-                for (String enchants : api.getEnchantments()) {
-                    if (nbti.hasTag(enchants)) player.sendMessage(api.getDisplayName(enchants)+" - "+nbt.getEnchantmentLevel(item, enchants));
-                }
+            switch (args.length) {
+                case 0:
+                    player.sendMessage("Debug:\n"
+                            +"JBEnchants: ("+nbti.getInteger("jbenchants")+") "+nbt.getEnchants(item).toString()
+                            +"\nLore: "+item.getLore().toString());
+                    break;
+                case 1:
+                    switch (args[0]) {
+                        case "update":
+                            player.sendMessage("Updating Lore:");
+                            lore.updateLore(item);
+                            break;
+                        case "delete":
+                            player.sendMessage("Deleting Lore:");
+                            lore.deleteUnusedEnchants(item);
+                            break;
+                        case "deleteAll":
+                            player.sendMessage("Deleting every Lore:");
+                            lore.deleteAllEnchants(item);
+                            break;
+                        case "slots":
+                            player.sendMessage("Enchantment-Slots: "+lore.getEnchantmentLoreSlots(item).toString());
+                            break;
+                    }
             }
         }
 

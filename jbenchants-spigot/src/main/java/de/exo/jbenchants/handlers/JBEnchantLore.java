@@ -24,11 +24,11 @@ public class JBEnchantLore implements JBEnchantData.Lore {
         if (lore != null) {
             for (int i = 0; i < lore.size(); i++) {
                 if (config.getBoolean("use_prefix")) {
-                    if (api.exists(api.getName(lore.get(i).split(" ")[0]+" "+lore.get(i).split(" ")[1]))) {
+                    if (api.check(api.getName(lore.get(i).split(" ")[0]+" "+lore.get(i).split(" ")[1]))) {
                         enchants.add(i);
                     }
                 } else {
-                    if (api.exists(api.getName(lore.get(i).split(" ")[0]))) {
+                    if (api.check(api.getName(lore.get(i).split(" ")[0]))) {
                         enchants.add(i);
                     }
                 }
@@ -49,7 +49,7 @@ public class JBEnchantLore implements JBEnchantData.Lore {
                 } else {
                     displayName = lore.get(i).split(" ")[0];
                 }
-                if (api.exists(api.getName(displayName)) && !nbt.getEnchants(item).contains(api.getName(displayName))) {
+                if (api.check(api.getName(displayName)) && !nbt.getEnchants(item).contains(api.getName(displayName))) {
                     lore.remove(i);
                 }
             }
@@ -75,13 +75,13 @@ public class JBEnchantLore implements JBEnchantData.Lore {
                 }
                 if (config.getBoolean("use_prefix")) {
                     if (string.size() == 2) {
-                        if (api.exists(api.getName(string.get(1)))) {
+                        if (api.check(api.getName(string.get(1)))) {
                             lore.remove(i);
                         }
                     }
                 } else {
                     if (string.size() == 1) {
-                        if (api.exists(api.getName(string.get(0)))) {
+                        if (api.check(api.getName(string.get(0)))) {
                             lore.remove(i);
                         }
                     }

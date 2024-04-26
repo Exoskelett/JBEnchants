@@ -8,9 +8,11 @@ public interface API {
 
     void createDefaultTables();
 
-    void addEnchantment(String name, String display_name, String rarity, int level_cap, double proc_chance);
+    void addEnchantment(String name, String display_name, String rarity);
 
     List<String> getEnchantments();
+
+    List<String> getEnchantments(String type);
 
     String getName(String displayName);
 
@@ -22,11 +24,9 @@ public interface API {
 
     double getProcChance(String name);
 
-    boolean checkActive(String name);
+    boolean check(String name);
 
-    boolean checkNotify(String name);
-
-    boolean exists(String name);
+    boolean check(String name, String dbCollum);
 
 
     String getEnchantmentColor(String name);

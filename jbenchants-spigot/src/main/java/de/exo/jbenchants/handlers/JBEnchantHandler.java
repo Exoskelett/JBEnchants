@@ -17,27 +17,26 @@ public class JBEnchantHandler implements JBEnchantData.Handler {
     public void procc(Player player, ItemStack tool, List<String> list, Block block) {
         List<String> notify = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            if (api.checkActive(list.get(i))) {
-                if (api.checkNotify(list.get(i))) {
+            if (api.check(list.get(i), "active")) {
+                if (api.check(list.get(i), "proccable")) {
                     activate(player, tool, list.get(i), block);
                     notify.add(list.get(i));
-                }
-            } else {
-                if (api.checkNotify(list.get(i))) {
-                    player.sendActionBar(api.getEnchantmentColor(api.getRarity(list.get(i)))+api.getDisplayName(list.get(i)) + " §cis currently disabled.");
                 }
             }
         }
         notify = lore.sortEnchants(notify);
+        notify(player, notify);
+    }
+    public void notify(Player player, List<String> list) {
         StringBuilder s = new StringBuilder();
-        for (int k = 0; k < notify.size(); k++) {
-            if (k < notify.size()-1) {
-                s.append(notify.get(k)).append("§a, ");
+        for (int k = 0; k < list.size(); k++) {
+            if (k < list.size()-1) {
+                s.append(list.get(k)).append("§7, ");
             } else {
-                s.append(notify.get(k));
+                s.append(list.get(k));
             }
         }
-        player.sendActionBar(s+" §aprocced.");
+        player.sendActionBar(s+" §7procced.");
     }
     public void activate(Player player, ItemStack tool, String name, Block block) {
         switch (name) {

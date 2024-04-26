@@ -4,6 +4,7 @@ import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -73,5 +74,28 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
         if (nbti.hasTag(name)) {
             return cap - nbti.getInteger(name) >= level;
         } else return level <= cap;
+    }
+    public String getCategory(ItemStack item) {
+        String material = item.getType().toString();
+        if (material.endsWith("_PICKAXE") || material.endsWith("_SHOVEL")) {
+            return "tool";
+        } else if (material.endsWith("_AXE")) {
+            return "axe";
+        }else if (material.endsWith("_SWORD")) {
+            return "weapon";
+        } else if (material.endsWith("_HELMET")) {
+            return "helmet";
+        } else if (material.endsWith("_CHESTPLATE")) {
+            return "chestplate";
+        } else if (material.endsWith("_LEGGINGS")) {
+            return "leggings";
+        } else if (material.endsWith("_BOOTS")) {
+            return "boots";
+        }else if (material.equals("FISHING_ROD")) {
+            return "fishing";
+        } else if (material.equals("BOW")) {
+            return "bow";
+        } else
+            return null;
     }
 }

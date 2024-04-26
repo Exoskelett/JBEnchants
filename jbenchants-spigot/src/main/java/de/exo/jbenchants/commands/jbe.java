@@ -18,7 +18,7 @@ public class jbe implements CommandExecutor, TabCompleter {
     JBEnchantNBT nbt = Main.instance.nbt;
     JBEnchantLore lore = Main.instance.lore;
 
-    String registerSyntax = "/jbe register <name> [rarity] [level_cap] [proc_chance]";
+    String registerSyntax = "/jbe register [rarity] [name]";
     String addEnchantSyntax = "/jbe enchant add <enchantment> <level>";
     String setEnchantSyntax = "/jbe enchant set <enchantment> <level>";
     String removeEnchantSyntax = "/jbe enchant remove <enchantment>";
@@ -41,21 +41,26 @@ public class jbe implements CommandExecutor, TabCompleter {
                 }
                 break;
             case 3:
+                String name = args[2].toLowerCase();
                 switch (args[0]) {
                     case "register":
-                        if (args[2].equalsIgnoreCase("special")) {
-                            api.addEnchantment(args[1].toLowerCase(), args[1], "special", 0, 0);
-                            sender.sendMessage("§7You added the following enchant: " + api.getEnchantmentColor(api.getRarity(args[1]))+api.getDisplayName(args[1]));
-                        }
+                        String rarity = args[1].toLowerCase();
+                        if (!api.check(name)) {
+                            if (rarity.equals("common") || rarity.equals("rare") || rarity.equals("epic") || rarity.equals("legendary") || rarity.equals("special")) {
+                                api.addEnchantment(name, name, rarity);
+                                sender.sendMessage("§7You added the following enchant: " + api.getEnchantmentColor(api.getRarity(name))+api.getDisplayName(name));
+                            } else
+                                sender.sendMessage("§cPlease use one of the following rarities: <common, rare, epic, legendary>");
+                        } else
+                            sender.sendMessage("§cThis enchantment already exists. You can edit its basic attributes in the database.");
                         break;
                     case "enchant":
                         if (sender instanceof Player) {
                             Player player = (Player) sender;
-                            String name = args[2].toLowerCase();
                             ItemStack item = player.getInventory().getItemInMainHand();
                             switch (args[1]) {
                                 case "add":
-                                    if (api.exists(name)) {
+                                    if (api.check(name)) {
                                         nbt.addEnchantmentLevel(item, name, 1);
                                         lore.updateLore(item);
                                         player.sendMessage("§7You changed your item's level of "+api.getEnchantmentColor(api.getRarity(name))+api.getDisplayName(name)+" §7to "+nbt.getEnchantmentLevel(item, name));
@@ -69,6 +74,7 @@ public class jbe implements CommandExecutor, TabCompleter {
                                         nbt.setEnchantmentLevel(item, name, 1);
                                         lore.updateLore(item);
                                     }
+                                    break;
                                 case "remove":
                                     if (nbt.getEnchants(item).contains(name)) {
                                         nbt.removeEnchantment(item, name);
@@ -84,20 +90,27 @@ public class jbe implements CommandExecutor, TabCompleter {
                 switch (args[0]) {
                     case "enchant":
                         if (sender instanceof Player) {
+                            String action = args[1].toLowerCase();
+                            int level;
+                            try {
+                                level = Integer.parseInt(args[3]);
+                            } catch (NumberFormatException e) {
+                                sender.sendMessage("§cSpecify a valid number as level. Not '"+args[3]+"'");
+                                break;
+                            }
                             Player player = (Player) sender;
-                            String name = args[2].toLowerCase();
-                            int level = Integer.parseInt(args[3]);
+                            name = args[2].toLowerCase();
                             ItemStack item = player.getInventory().getItemInMainHand();
-                            switch (args[1]) {
+                            switch (action) {
                                 case "add":
-                                    if (api.exists(name)) {
+                                    if (api.check(name)) {
                                         nbt.addEnchantmentLevel(item, name, level);
                                         lore.updateLore(item);
                                     } else
                                         sender.sendMessage("§cThis enchantment doesn't exist.");
                                     break;
                                 case "set":
-                                    if (api.exists(name)) {
+                                    if (api.check(name)) {
                                         nbt.setEnchantmentLevel(item, name, level);
                                         lore.updateLore(item);
                                     } else
@@ -106,23 +119,9 @@ public class jbe implements CommandExecutor, TabCompleter {
                             }
                         } else
                             sender.sendMessage("§cYou have to be a player to execute this command.");
+                        break;
                 }
                 break;
-            case 5:
-                switch (args[0]) {
-                    case "register":
-                        String name = args[1].toLowerCase(), rarity = args[2].toLowerCase();
-                        int level_cap = Integer.parseInt(args[3]);
-                        double proc_chance = Double.parseDouble(args[4]);
-                        if (!api.exists(name)) {
-                            if (rarity.equals("common") || rarity.equals("rare") || rarity.equals("epic") || rarity.equals("legendary") || rarity.equals("special")) {
-                                api.addEnchantment(name, name, rarity, level_cap, proc_chance);
-                                sender.sendMessage("§7You added the following enchant: " + api.getEnchantmentColor(api.getRarity(name))+api.getDisplayName(name));
-                            } else
-                                sender.sendMessage("§cPlease use one of the following rarities: <common, rare, epic, legendary>");
-                        } else
-                            sender.sendMessage("§cThis enchantment already exists. You can edit its basic attributes in the database.");
-                }
         }
         return false;
     }
@@ -140,14 +139,14 @@ public class jbe implements CommandExecutor, TabCompleter {
                 case "register":
                     switch (args.length) {
                         case 2:
-                            completer.add("");
-                            return completer;
-                        case 3:
                             completer.add("common");
                             completer.add("rare");
                             completer.add("epic");
                             completer.add("legendary");
                             completer.add("special");
+                            return completer;
+                        case 3:
+                            completer.add("");
                             return completer;
                     }
                     break;
@@ -161,11 +160,11 @@ public class jbe implements CommandExecutor, TabCompleter {
                                 completer.add("remove");
                                 return completer;
                             case 3:
-                                List<String> enchants = api.getEnchantments();
+                                List<String> enchants = api.getEnchantments(nbt.getCategory(item));
                                 switch (args[1]) {
                                     case "add", "set":
                                         for (int i = 0; i < enchants.size(); i++) {
-                                            if (api.checkActive(enchants.get(i)))
+                                            if (api.check(enchants.get(i), "active"))
                                                 completer.add(enchants.get(i));
                                         }
                                         return completer;

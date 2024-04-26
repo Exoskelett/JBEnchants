@@ -42,12 +42,12 @@ public class MySQL implements API {
         try {
             // enchantments
             PreparedStatement ps1 = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS enchantments "
-                    + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), level_cap int, proc_chance double, active boolean, notify boolean, PRIMARY KEY (id))");
+                    + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), category varchar(10), level_cap int, proc_chance double, active boolean, proccable boolean, notify boolean, PRIMARY KEY (id))");
             ps1.executeUpdate();
+
             PreparedStatement ps2 = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS rarities "
                     + "(id int NOT NULL AUTO_INCREMENT, rarity varchar(20), prefix varchar(20), color varchar(10), PRIMARY KEY (id))");
             ps2.executeUpdate();
-
             PreparedStatement psCheck = getConnection().prepareStatement("SELECT COUNT(*) FROM rarities");
             ResultSet rs = psCheck.executeQuery();
             rs.next();
@@ -72,16 +72,18 @@ public class MySQL implements API {
     }
 
     @Override
-    public void addEnchantment(String name, String display_name, String rarity, int level_cap, double proc_chance) {
+    public void addEnchantment(String name, String display_name, String rarity) {
         try {
-            PreparedStatement ps = getConnection().prepareStatement("INSERT IGNORE INTO enchantments (name, display_name, rarity, level_cap, proc_chance, active, notify) VALUES (?,?,?,?,?,?,?)");
+            PreparedStatement ps = getConnection().prepareStatement("INSERT IGNORE INTO enchantments (name, display_name, rarity, category, level_cap, proc_chance, active, proccable, notify) VALUES (?,?,?,?,?,?,?,?,?)");
             ps.setString(1, name);
             ps.setString(2, display_name);
             ps.setString(3, rarity);
-            ps.setInt(4, level_cap);
-            ps.setDouble(5, proc_chance);
-            ps.setBoolean(6, false);
+            ps.setString(4, null);
+            ps.setInt(5, 0);
+            ps.setDouble(6, 0);
             ps.setBoolean(7, false);
+            ps.setBoolean(8, false);
+            ps.setBoolean(9, false);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -96,6 +98,42 @@ public class MySQL implements API {
             List<String> enchants = new ArrayList<>();
             while (getEnchantsResult.next()) {
                 enchants.add(getEnchantsResult.getString("name"));
+            }
+            return enchants;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public List<String> getEnchantments(String category) {  // categories: tool, axe, weapon, armor, fishing, bow
+        try {
+            PreparedStatement getEnchants;
+            switch (category) {
+                case "axe":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE category='tool' OR category='weapon' OR category='bow' OR category='*'");
+                    break;
+                case "weapon":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE category='weapon' OR category='bow' OR category='*'");
+                    break;
+                case "helmet", "chestplate", "leggings", "boots":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE category='armor' OR category=? OR category='*'");
+                    getEnchants.setString(1, category);
+                    break;
+                default:
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments WHERE category=? OR category='*'");
+                    getEnchants.setString(1, category);
+                    break;
+            }
+            ResultSet getEnchantsResult = getEnchants.executeQuery();
+            List<String> enchants = new ArrayList<>();
+            while (getEnchantsResult.next()) {
+                if (!((category.equals("axe") || category.equals("weapon")) && getEnchantsResult.getString("name").equals("pierce")))
+                    enchants.add(getEnchantsResult.getString("name"));
             }
             return enchants;
         } catch (SQLException e) {
@@ -183,37 +221,7 @@ public class MySQL implements API {
     }
 
     @Override
-    public boolean checkActive(String name) {
-        try {
-            PreparedStatement check = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
-            check.setString(1, name);
-            ResultSet checkResult = check.executeQuery();
-            if (checkResult.next()) {
-                return checkResult.getBoolean("active");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    @Override
-    public boolean checkNotify(String name) {
-        try {
-            PreparedStatement checkNotify = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
-            checkNotify.setString(1, name);
-            ResultSet checkNotifyResult = checkNotify.executeQuery();
-            if (checkNotifyResult.next()) {
-                return checkNotifyResult.getBoolean("notify");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    @Override
-    public boolean exists(String name) {
+    public boolean check(String name) {
         try {
             PreparedStatement exists = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
             exists.setString(1, name);
@@ -224,6 +232,21 @@ public class MySQL implements API {
             }
             existsResult.close();
             return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean check(String name, String dbString) {
+        try {
+            PreparedStatement check = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
+            check.setString(1, name);
+            ResultSet checkResult = check.executeQuery();
+            if (checkResult.next()) {
+                return checkResult.getBoolean(dbString);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
