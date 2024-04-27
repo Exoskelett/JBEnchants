@@ -28,10 +28,17 @@ public interface API {
 
     boolean check(String name, String dbCollum);
 
+    String getColor(String name);
 
-    String getEnchantmentColor(String name);
+    String getPrefix(String name);
 
-    String getEnchantmentPrefix(String name);
+    // crystals:
+    String getItemName(String type);
+
+    String[] getItemLore(String type);
+
+
+
 
     void setLobbySpawn(String world, String location);
 

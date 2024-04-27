@@ -47,6 +47,21 @@ public class test implements CommandExecutor {
                         case "slots":
                             player.sendMessage("Enchantment-Slots: "+lore.getEnchantmentLoreSlots(item).toString());
                             break;
+                        case "crystal":
+                            player.sendMessage("Rarity: "+nbti.getString("crystal"));
+                            player.sendMessage("Chance: "+nbti.getString("chance"));
+                            break;
+                    }
+                case 2:
+                    switch (args[0]) {
+                        case "setCrystal":
+                            nbti.setString("crystal", args[1]);
+                            nbti.applyNBT(item);
+                            break;
+                        case "setChance":
+                            nbti.setString("chance", args[1]);
+                            nbti.applyNBT(item);
+                            break;
                     }
             }
         }

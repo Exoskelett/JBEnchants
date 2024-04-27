@@ -1,5 +1,6 @@
 name: JBEnchants
 version: '${project.version}'
+api-version: 1.20
 main: de.exo.jbenchants.Main
 authors: [Exoskelett]
 depend: [NBTAPI]
@@ -7,3 +8,7 @@ depend: [NBTAPI]
 commands:
   jbe:
   test:
+  cleanser:
+  crystal:
+  dust:
+  repairscroll:

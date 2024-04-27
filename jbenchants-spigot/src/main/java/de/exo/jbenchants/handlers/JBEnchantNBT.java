@@ -3,8 +3,6 @@ package de.exo.jbenchants.handlers;
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.tr7zw.nbtapi.NBTItem;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;

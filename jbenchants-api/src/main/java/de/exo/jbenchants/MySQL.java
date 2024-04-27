@@ -42,29 +42,47 @@ public class MySQL implements API {
         try {
             // enchantments
             PreparedStatement ps1 = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS enchantments "
-                    + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), category varchar(10), level_cap int, proc_chance double, active boolean, proccable boolean, notify boolean, PRIMARY KEY (id))");
+                    + "(id int NOT NULL AUTO_INCREMENT, name varchar(20), display_name varchar(20), rarity varchar(10), category varchar(10), level_cap int, proc_chance double, active boolean, proccable boolean, notify boolean, material varchar(30), lore varchar(255), PRIMARY KEY (id))");
             ps1.executeUpdate();
 
             PreparedStatement ps2 = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS rarities "
-                    + "(id int NOT NULL AUTO_INCREMENT, rarity varchar(20), prefix varchar(20), color varchar(10), PRIMARY KEY (id))");
+                    + "(id int NOT NULL AUTO_INCREMENT, rarity varchar(10), prefix varchar(20), color varchar(10), PRIMARY KEY (id))");
             ps2.executeUpdate();
-            PreparedStatement psCheck = getConnection().prepareStatement("SELECT COUNT(*) FROM rarities");
-            ResultSet rs = psCheck.executeQuery();
-            rs.next();
-            int rowCount = rs.getInt(1);
-            psCheck.close();
-            if (rowCount == 0) {
+            PreparedStatement ps2Check = getConnection().prepareStatement("SELECT COUNT(*) FROM rarities");
+            ResultSet ps2CheckResult = ps2Check.executeQuery();
+            ps2CheckResult.next();
+            int row2Count = ps2CheckResult.getInt(1);
+            ps2Check.close();
+            if (row2Count == 0) {
             String[] rarities = {"legendary", "epic", "rare", "common", "special"};
             String[] colors = {"§5", "§b", "§6", "§f", "§7"};
-
             for (int i = 0; i < rarities.length; i++) {
                 String query = "INSERT IGNORE INTO rarities (rarity, color) VALUES (?,?)";
-                PreparedStatement ps = getConnection().prepareStatement(query);
-                ps.setString(1, rarities[i]);
-                ps.setString(2, colors[i]);
-                ps.executeUpdate();
-                ps.close();
+                PreparedStatement ps3 = getConnection().prepareStatement(query);
+                ps3.setString(1, rarities[i]);
+                ps3.setString(2, colors[i]);
+                ps3.executeUpdate();
             }
+            }
+
+            PreparedStatement ps4 = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS items "
+                    + "(id int NOT NULL AUTO_INCREMENT, type varchar(20), display_name varchar(50), lore varchar(255), PRIMARY KEY (id))");
+            ps4.executeUpdate();
+            PreparedStatement ps4Check = getConnection().prepareStatement("SELECT COUNT(*) FROM items");
+            ResultSet ps4CheckResult = ps4Check.executeQuery();
+            ps4CheckResult.next();
+            int row4Count = ps4CheckResult.getInt(1);
+            ps4Check.close();
+            if (row4Count == 0) {
+                String[] types = {"crystal", "mysteryCrystal", "dust", "cleanser", "scroll"};
+                for (int i = 0; i < 5; i++) {
+                    String query = "INSERT IGNORE INTO items (type, display_name, lore) VALUES (?,?,?)";
+                    PreparedStatement ps5 = getConnection().prepareStatement(query);
+                    ps5.setString(1, types[i]);
+                    ps5.setString(2, null);
+                    ps5.setString(3, null);
+                    ps5.executeUpdate();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -74,7 +92,7 @@ public class MySQL implements API {
     @Override
     public void addEnchantment(String name, String display_name, String rarity) {
         try {
-            PreparedStatement ps = getConnection().prepareStatement("INSERT IGNORE INTO enchantments (name, display_name, rarity, category, level_cap, proc_chance, active, proccable, notify) VALUES (?,?,?,?,?,?,?,?,?)");
+            PreparedStatement ps = getConnection().prepareStatement("INSERT IGNORE INTO enchantments (name, display_name, rarity, category, level_cap, proc_chance, active, proccable, notify, material, lore) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
             ps.setString(1, name);
             ps.setString(2, display_name);
             ps.setString(3, rarity);
@@ -84,6 +102,8 @@ public class MySQL implements API {
             ps.setBoolean(7, false);
             ps.setBoolean(8, false);
             ps.setBoolean(9, false);
+            ps.setString(10, null);
+            ps.setString(11, null);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -254,7 +274,7 @@ public class MySQL implements API {
     }
 
     @Override
-    public String getEnchantmentColor(String rarity) {
+    public String getColor(String rarity) {
         try {
             PreparedStatement getEnchantmentColor = getConnection().prepareStatement("SELECT * FROM rarities WHERE rarity=?");
             getEnchantmentColor.setString(1, rarity);
@@ -269,7 +289,7 @@ public class MySQL implements API {
     }
 
     @Override
-    public String getEnchantmentPrefix(String rarity) {
+    public String getPrefix(String rarity) {
         try {
             PreparedStatement getEnchantmentPrefix = getConnection().prepareStatement("SELECT * FROM rarities WHERE rarity=?");
             getEnchantmentPrefix.setString(1, rarity);
@@ -282,6 +302,49 @@ public class MySQL implements API {
         }
         return null;
     }
+
+    // Items
+
+    @Override
+    public String getItemName(String type) {
+        try {
+            PreparedStatement getCrystalName = getConnection().prepareStatement("SELECT * FROM items WHERE type=?");
+            getCrystalName.setString(1, type);
+            ResultSet getCrystalNameResults = getCrystalName.executeQuery();
+            if (getCrystalNameResults.next()) {
+                return getCrystalNameResults.getString("display_name");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public String[] getItemLore(String type) {
+        try {
+            PreparedStatement getCrystalLore = getConnection().prepareStatement("SELECT * FROM items WHERE type=?");
+            getCrystalLore.setString(1, type);
+            ResultSet getCrystalLoreResults = getCrystalLore.executeQuery();
+            if (getCrystalLoreResults.next()) {
+                return getCrystalLoreResults.getString("lore").split(":nl:");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
