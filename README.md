@@ -5,15 +5,23 @@ recoding the current JBMC enchants in Java with MySQL, NBT tags and much more. S
 # Commands
 _All commands include TabCompleters!_
 
-`/jbe add <enchant> <level_cap> <proc_chance>` adds the basic parameters for a new enchantment
+`/jbe register (rarity] [name]` registers the basic parameters for a new enchantment into MySQL
 
-`/jbe enchant <enchant> <add/set/remove> <level>` configures an enchantment of the item you are currently holding
+`/jbe enchant [add/set/remove] [enchant] <level>` configures an enchantment on the item you are currently holding
+
+`/crystal normal [player] <amount> <rarity> <chance>` gives a crystal
+
+`/crystal mystery [player] <amount> <rarity> <low> <high>` gives a mystery crystal
+
+`/cleanser [player] <amount> <chance>` gives you a cleanser
+
+`/dust [player] [amount] <rarity> <chance>` gives you dust
+
+`/repairscroll [player] [amount] <rarity> <chance>` gives you a repair scroll
 
 # To-Do
 - [x] Add lore handler
-  - [ ] Testing
-- [ ] Add messages to MySQL
-- [ ] Add more ingame control features via '/jbe'
-- [ ] Add crystals/scrolls/scrappers
+  - [x] Testing
+- [x] Add crystals/cleansers/dust/scrolls
   - [ ] Implement handlers
   - [ ] Implement GUIs
