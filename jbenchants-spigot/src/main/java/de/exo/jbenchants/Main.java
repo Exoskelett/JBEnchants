@@ -2,6 +2,7 @@ package de.exo.jbenchants;
 
 import de.exo.jbenchants.commands.*;
 import de.exo.jbenchants.events.Crystals;
+import de.exo.jbenchants.events.Merging;
 import de.exo.jbenchants.handlers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
@@ -41,6 +42,7 @@ public class Main extends JavaPlugin {
             Bukkit.getLogger().info("[JBEnchants] MySQL-Database is connected.");
             api.createDefaultTables();
 
+            Bukkit.getPluginManager().registerEvents(new Merging(), this);
             Bukkit.getPluginManager().registerEvents(new ToolReader(), this);
             getCommand("cleanser").setExecutor(new Cleanser());
             getCommand("cleanser").setTabCompleter(new Cleanser());

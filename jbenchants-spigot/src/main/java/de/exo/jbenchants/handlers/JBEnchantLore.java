@@ -2,6 +2,7 @@ package de.exo.jbenchants.handlers;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
+import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -207,6 +208,14 @@ public class JBEnchantLore implements JBEnchantData.Lore {
                     .replace(":chance:", getChanceGradient(chance)+"%"));
         }
         return lore;
+    }
+
+    @Override
+    public void updateCrystalLore(ItemStack item) {
+        NBTItem nbti = new NBTItem(item);
+        List<String> newLore = getCrystalLore(nbti.getString("crystal"), nbti.getInteger("chance"));
+        item.getItemMeta().setLore(newLore);
+        item.setItemMeta(item.getItemMeta());
     }
 
     @Override

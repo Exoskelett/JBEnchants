@@ -49,6 +49,8 @@ public interface JBEnchantData {
 
         List<String> getCrystalLore(String rarity, int chance);
 
+        void updateCrystalLore(ItemStack item);
+
         void setCrystalMeta(ItemStack item, String rarity, int chance);
 
         List<String> getMysteryCrystalLore(String rarity, int low, int high);

@@ -32,6 +32,14 @@ public class test implements CommandExecutor {
                     break;
                 case 1:
                     switch (args[0]) {
+                        case "nbt":
+                            for (String keys : nbti.getKeys()) {
+                                if (nbti.getString(keys) != "")
+                                    player.sendMessage(keys + " - " + nbti.getString(keys));
+                                if (nbti.getInteger(keys) != 0)
+                                    player.sendMessage(keys + " - " + nbti.getInteger(keys));
+                            }
+                            break;
                         case "update":
                             player.sendMessage("Updating Lore:");
                             lore.updateLore(item);
