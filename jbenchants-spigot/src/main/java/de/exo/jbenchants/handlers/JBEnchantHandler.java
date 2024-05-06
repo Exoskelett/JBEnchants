@@ -64,7 +64,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler {
         NBTItem nbti = new NBTItem(item);
         List<String> lore = item.getLore();
         if (!nbti.hasTag("crystal") && lore != null) {
-            if (Objects.equals(lore.get(2), api.getItemLore("crystal")[2])) {
+            if (Objects.equals(lore.get(3), api.getItemLore("crystal")[3])) {
                 String rarity = lore.get(0).split(" ")[1].substring(2).substring(0, 1).toUpperCase();
                 nbti.setString("crystal", rarity);
                 String chance = lore.get(1).split(" ")[2].substring(2).replace("%", "");

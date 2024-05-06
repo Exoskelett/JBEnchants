@@ -12,6 +12,10 @@ public interface API {
 
     List<String> getEnchantments();
 
+    String getEnchantmentMaterial(String name);
+
+    String getEnchantmentLore(String name);
+
     List<String> getEnchantments(String type);
 
     String getName(String displayName);

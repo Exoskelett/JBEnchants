@@ -197,6 +197,19 @@ public class JBEnchantLore implements JBEnchantData.Lore {
         return list;
     }
 
+    @Override
+    public void setEnchantmentInfoMeta(ItemStack item, String name) {
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = new ArrayList<>();
+        lore.add("§7Rarity: "+api.getColor(api.getRarity(name))+api.getRarity(name).substring(0, 1).toUpperCase()+api.getRarity(name).substring(1));
+        lore.add("§7Max Level: §e"+api.getLevelCap(name));
+        lore.add("");
+        lore.addAll(List.of(api.getEnchantmentLore(name).split(":nl:")));
+        meta.setLore(lore);
+        meta.setDisplayName(api.getColor(api.getRarity(name))+"§n"+api.getDisplayName(name));
+        item.setItemMeta(meta);
+    }
+
     // Crystals
 
     @Override

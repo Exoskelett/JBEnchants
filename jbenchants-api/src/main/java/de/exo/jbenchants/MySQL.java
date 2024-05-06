@@ -111,6 +111,36 @@ public class MySQL implements API {
     }
 
     @Override
+    public String getEnchantmentMaterial(String name) {
+        try {
+            PreparedStatement getEnchantmentMaterial = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
+            getEnchantmentMaterial.setString(1, name);
+            ResultSet getEnchantmentMaterialResults = getEnchantmentMaterial.executeQuery();
+            if (getEnchantmentMaterialResults.next()) {
+                return getEnchantmentMaterialResults.getString("material");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public String getEnchantmentLore(String name) {
+        try {
+            PreparedStatement getEnchantmentLore = getConnection().prepareStatement("SELECT * FROM enchantments WHERE name=?");
+            getEnchantmentLore.setString(1, name);
+            ResultSet getEnchantmentLoreResults = getEnchantmentLore.executeQuery();
+            if (getEnchantmentLoreResults.next()) {
+                return getEnchantmentLoreResults.getString("lore");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
     public List<String> getEnchantments() {
         try {
             PreparedStatement getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments");
@@ -127,10 +157,15 @@ public class MySQL implements API {
     }
 
     @Override
-    public List<String> getEnchantments(String category) {  // categories: tool, axe, weapon, armor, fishing, bow
+    public List<String> getEnchantments(String category) {  // categories: tool, axe, weapon, armor, fishing, bow, common, rare, epic, legendary
         try {
             PreparedStatement getEnchants;
             switch (category) {
+                case "common", "rare", "epic", "legendary":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE rarity=?");
+                    getEnchants.setString(1, category);
+                    break;
                 case "axe":
                     getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
                             + "WHERE category='tool' OR category='weapon' OR category='bow' OR category='*'");
@@ -143,6 +178,10 @@ public class MySQL implements API {
                     getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
                             + "WHERE category='armor' OR category=? OR category='*'");
                     getEnchants.setString(1, category);
+                    break;
+                case "armor":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE category='armor' OR category='helmet' OR category='chestplate' OR category='leggings' OR category='boots' OR category='*'");
                     break;
                 default:
                     getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments WHERE category=? OR category='*'");

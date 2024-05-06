@@ -34,7 +34,7 @@ public class test implements CommandExecutor {
                     switch (args[0]) {
                         case "nbt":
                             for (String keys : nbti.getKeys()) {
-                                if (nbti.getString(keys) != "")
+                                if (!nbti.getString(keys).isEmpty())
                                     player.sendMessage(keys + " - " + nbti.getString(keys));
                                 if (nbti.getInteger(keys) != 0)
                                     player.sendMessage(keys + " - " + nbti.getInteger(keys));

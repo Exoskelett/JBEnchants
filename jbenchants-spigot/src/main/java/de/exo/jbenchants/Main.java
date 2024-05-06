@@ -1,8 +1,9 @@
 package de.exo.jbenchants;
 
 import de.exo.jbenchants.commands.*;
-import de.exo.jbenchants.events.Crystals;
-import de.exo.jbenchants.events.Merging;
+import de.exo.jbenchants.events.GUIHandler;
+import de.exo.jbenchants.events.ItemUpdater;
+import de.exo.jbenchants.events.ItemMerger;
 import de.exo.jbenchants.handlers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
@@ -42,15 +43,17 @@ public class Main extends JavaPlugin {
             Bukkit.getLogger().info("[JBEnchants] MySQL-Database is connected.");
             api.createDefaultTables();
 
-            Bukkit.getPluginManager().registerEvents(new Merging(), this);
+            Bukkit.getPluginManager().registerEvents(new GUIHandler(), this);
+            Bukkit.getPluginManager().registerEvents(new ItemMerger(), this);
             Bukkit.getPluginManager().registerEvents(new ToolReader(), this);
             getCommand("cleanser").setExecutor(new Cleanser());
             getCommand("cleanser").setTabCompleter(new Cleanser());
             getCommand("crystal").setExecutor(new Crystal());
             getCommand("crystal").setTabCompleter(new Crystal());
-            Bukkit.getPluginManager().registerEvents(new Crystals(), this);
+            Bukkit.getPluginManager().registerEvents(new ItemUpdater(), this);
             getCommand("dust").setExecutor(new Dust());
             getCommand("dust").setTabCompleter(new Dust());
+            getCommand("enchants").setExecutor(new Enchants());
             getCommand("repairscroll").setExecutor(new RepairScroll());
             getCommand("repairscroll").setTabCompleter(new RepairScroll());
             getCommand("jbe").setExecutor(new jbe());

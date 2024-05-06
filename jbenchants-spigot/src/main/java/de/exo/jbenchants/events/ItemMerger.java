@@ -1,27 +1,27 @@
 package de.exo.jbenchants.events;
 
+import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantLore;
+import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 
-import java.io.BufferedReader;
 import java.util.Objects;
+import java.util.Random;
 
-public class Merging implements Listener {
+public class ItemMerger implements Listener {
 
+    API api = Main.instance.api;
     JBEnchantLore lore = Main.instance.lore;
     JBEnchantItems items = Main.instance.items;
+    JBEnchantNBT nbt = Main.instance.nbt;
 
     @EventHandler
     public void onItemMerge(InventoryClickEvent event) {
@@ -41,15 +41,18 @@ public class Merging implements Listener {
                         // TBA
                     } else {
                         event.setCancelled(true);
+                        String randomEnchant = nbt.getEnchants(destination).get(new Random().nextInt(nbt.getEnchants(destination).size()));
+                        nbt.removeEnchantment(destination, randomEnchant);
+                        lore.updateLore(destination);
                         player.setItemOnCursor(null);
-                        player.sendMessage("This cleanser sucked!");  // TBA
+                        player.sendMessage("§cYour cleanser failed, and removed the "+api.getColor(api.getRarity(randomEnchant))+api.getDisplayName(randomEnchant));  // TBA
                     }
                 }
             } else if (originNbt.hasTag("dust")) {
-                if (destinationNbt.hasTag("crystal")) {
+                if (destinationNbt.hasTag("crystal") && destinationNbt.getString("chance").split("-").length == 1) {
                     if (Objects.equals(originNbt.getString("dust"), destinationNbt.getString("crystal"))) {
                         Bukkit.broadcastMessage(destinationNbt.getInteger("chance") +" "+ originNbt.getInteger("chance"));
-                        int oldChance = destinationNbt.getInteger("chance");
+                        int oldChance = Integer.parseInt(destinationNbt.getString("chance"));
                         int newChance = oldChance + originNbt.getInteger("chance");
                         if (newChance > 100) newChance = 100;
                         ItemStack newCrystal = items.getCrystal(destinationNbt.getString("crystal"), newChance);

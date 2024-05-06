@@ -7,11 +7,22 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class JBEnchantItems implements JBEnchantData.Items {
 
     API api = Main.instance.api;
     JBEnchantLore lore = Main.instance.lore;
+
+    // Information
+
+    @Override
+    public ItemStack getEnchantInformation(String name) {
+        ItemStack enchInfo = new ItemStack(Material.getMaterial(api.getEnchantmentMaterial(name)));
+        lore.setEnchantmentInfoMeta(enchInfo, name);
+        enchInfo.setItemMeta(enchInfo.getItemMeta());
+        return enchInfo;
+    }
 
     // Crystals
 

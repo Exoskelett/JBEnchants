@@ -5,7 +5,6 @@ import de.exo.jbenchants.handlers.JBEnchantHandler;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.tr7zw.nbtapi.NBTItem;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,20 +13,29 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class Crystals implements Listener {
+public class ItemUpdater implements Listener {
 
     JBEnchantNBT nbt = Main.instance.nbt;
     JBEnchantHandler handler = Main.instance.handler;
     JBEnchantItems items = Main.instance.items;
 
     @EventHandler
-    public void onCrystalNBTUpdate(InventoryClickEvent event) {
+    public void onItemClickUpdate(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         ItemStack item = event.getCurrentItem();
         if (item != null) {
-            if (item.getType().equals(Material.NETHER_STAR) && handler.updateCrystal(item)) {
+            if (handler.updateCrystal(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated crystal in your inventory got updated.");
+            } else if (handler.updateCleanser(item)) {
+                event.setCancelled(true);
+                player.sendMessage("§7An outdated cleanser in your inventory got updated.");
+            } else if (handler.updateDust(item)) {
+                event.setCancelled(true);
+                player.sendMessage("§7An outdated dust in your inventory got updated.");
+            } else if (handler.updateScroll(item)) {
+                event.setCancelled(true);
+                player.sendMessage("§7An outdated repair scroll in your inventory got updated.");
             }
         }
     }
