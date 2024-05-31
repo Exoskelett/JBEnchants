@@ -183,6 +183,14 @@ public class MySQL implements API {
                     getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
                             + "WHERE category='armor' OR category='helmet' OR category='chestplate' OR category='leggings' OR category='boots' OR category='*'");
                     break;
+                case "fishing":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE category='fishing' OR category='*'");
+                    break;
+                case "bow":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE category='bow' OR category='*'");
+                    break;
                 default:
                     getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments WHERE category=? OR category='*'");
                     getEnchants.setString(1, category);

@@ -2,6 +2,7 @@ package de.exo.jbenchants.events;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
+import de.exo.jbenchants.handlers.JBEnchantHandler;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantLore;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
@@ -22,23 +23,49 @@ public class ItemMerger implements Listener {
     JBEnchantLore lore = Main.instance.lore;
     JBEnchantItems items = Main.instance.items;
     JBEnchantNBT nbt = Main.instance.nbt;
+    JBEnchantHandler handler = Main.instance.handler;
+    GUIHandler guiHandler = Main.instance.guiHandler;
 
     @EventHandler
     public void onItemMerge(InventoryClickEvent event) {
+        if (Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
         Player player = (Player) event.getWhoClicked();
         try {
             ItemStack origin = event.getCursor();
             NBTItem originNbt = new NBTItem(origin);
             ItemStack destination = event.getCurrentItem();
             NBTItem destinationNbt = new NBTItem(destination);
-            if (originNbt.hasTag("crystal")) {
-
+            if (!originNbt.hasTag("crystal") && !originNbt.hasTag("cleanser") && !originNbt.hasTag("dust") && !originNbt.hasTag("scroll")) {
+                new ItemUpdater().updateItem(event);
+                return;
+            }
+            if (originNbt.hasTag("crystal") && originNbt.getString("chance").split("-").length == 1) {
+                if (nbt.getCategory(destination) != null) {
+                    if (guiHandler.getPossibleEnchants(player, destination, originNbt.getString("crystal")) != null) {
+                        double chance = (double) Integer.parseInt(originNbt.getString("chance"))/100;
+                        if (Math.random() <= chance) {
+                            event.setCancelled(true);
+                            player.setItemOnCursor(null);
+                            String addedEnchant = guiHandler.unlockCrystal(player, destination, originNbt.getString("crystal"));
+                            nbt.addEnchantmentLevel(destination, addedEnchant, 1);
+                        } else {
+                            event.setCancelled(true);
+                            player.setItemOnCursor(null);
+                            player.sendMessage("§cYour crystal failed.");
+                        }
+                    } else {
+                        event.setCancelled(true);
+                        player.sendMessage("§cThere's no enchantments of this tier left for you to get, Please try different crystal rarities.");
+                    }
+                }
             } else if (originNbt.hasTag("cleanser")) {
                 if (destinationNbt.hasTag("jbenchants")) {
                     double chance = (double) originNbt.getInteger("cleanser")/100;
                     if (Math.random() <= chance) {
-                        player.sendMessage("Yay, this worked! But there is no GUI yet, so... sorry about that");
-                        // TBA
+                        event.setCancelled(true);
+                        nbt.setCleanserChance(player, originNbt.getInteger("cleanser"));
+                        player.setItemOnCursor(null);
+                        player.openInventory(guiHandler.getCleanserInventory(destination));
                     } else {
                         event.setCancelled(true);
                         String randomEnchant = nbt.getEnchants(destination).get(new Random().nextInt(nbt.getEnchants(destination).size()));

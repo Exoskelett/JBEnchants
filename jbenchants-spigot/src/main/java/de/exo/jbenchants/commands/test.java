@@ -4,7 +4,9 @@ import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantLore;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
+import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -24,6 +26,7 @@ public class test implements CommandExecutor {
             Player player = (Player) sender;
             ItemStack item = player.getInventory().getItemInMainHand();
             NBTItem nbti = new NBTItem(item);
+            NBTEntity entity = new NBTEntity(player);
             switch (args.length) {
                 case 0:
                     player.sendMessage("Debug:\n"
@@ -40,6 +43,13 @@ public class test implements CommandExecutor {
                                     player.sendMessage(keys + " - " + nbti.getInteger(keys));
                             }
                             break;
+                        case "enbt":
+                            for (String keys : entity.getPersistentDataContainer().getKeys()) {
+                                if (!entity.getPersistentDataContainer().getString(keys).isEmpty())
+                                    player.sendMessage(keys + " - " + entity.getPersistentDataContainer().getString(keys));
+                                if (entity.getPersistentDataContainer().getInteger(keys) != 0)
+                                    player.sendMessage(keys + " - " + entity.getPersistentDataContainer().getInteger(keys));
+                            }
                         case "update":
                             player.sendMessage("Updating Lore:");
                             lore.updateLore(item);

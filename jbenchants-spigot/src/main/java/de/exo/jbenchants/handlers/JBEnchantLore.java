@@ -204,7 +204,24 @@ public class JBEnchantLore implements JBEnchantData.Lore {
         lore.add("§7Rarity: "+api.getColor(api.getRarity(name))+api.getRarity(name).substring(0, 1).toUpperCase()+api.getRarity(name).substring(1));
         lore.add("§7Max Level: §e"+api.getLevelCap(name));
         lore.add("");
-        lore.addAll(List.of(api.getEnchantmentLore(name).split(":nl:")));
+        for (int i = 0; i < api.getEnchantmentLore(name).split(":nl:").length; i++) {
+            lore.add("§7"+api.getEnchantmentLore(name).split(":nl:")[i]);
+        }
+        meta.setLore(lore);
+        meta.setDisplayName(api.getColor(api.getRarity(name))+"§n"+api.getDisplayName(name));
+        item.setItemMeta(meta);
+    }
+
+    @Override
+    public void setCleanserEnchantmentInfoMeta(ItemStack item, ItemStack reference, String name) {
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = new ArrayList<>();
+        lore.add("§7Rarity: "+api.getColor(api.getRarity(name))+api.getRarity(name).substring(0, 1).toUpperCase()+api.getRarity(name).substring(1));
+        lore.add("§7Level: §e"+nbt.getEnchantmentLevel(reference, name)+" §8(§e"+api.getLevelCap(name)+"§8)");
+        lore.add("");
+        for (int i = 0; i < api.getEnchantmentLore(name).split(":nl:").length; i++) {
+            lore.add("§7"+api.getEnchantmentLore(name).split(":nl:")[i]);
+        }
         meta.setLore(lore);
         meta.setDisplayName(api.getColor(api.getRarity(name))+"§n"+api.getDisplayName(name));
         item.setItemMeta(meta);

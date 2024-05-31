@@ -18,6 +18,7 @@ public class Main extends JavaPlugin {
     public JBEnchantLore lore;
     public JBEnchantHandler handler;
     public JBEnchantItems items;
+    public GUIHandler guiHandler;
     public static Main instance;
 
     @Override
@@ -38,6 +39,7 @@ public class Main extends JavaPlugin {
         lore = new JBEnchantLore();
         handler = new JBEnchantHandler();
         items = new JBEnchantItems();
+        guiHandler = new GUIHandler();
 
         if (api.isConnected()) {
             Bukkit.getLogger().info("[JBEnchants] MySQL-Database is connected.");
@@ -50,12 +52,13 @@ public class Main extends JavaPlugin {
             getCommand("cleanser").setTabCompleter(new Cleanser());
             getCommand("crystal").setExecutor(new Crystal());
             getCommand("crystal").setTabCompleter(new Crystal());
-            Bukkit.getPluginManager().registerEvents(new ItemUpdater(), this);
+            getCommand("crystals").setExecutor(new Crystals());
             getCommand("dust").setExecutor(new Dust());
             getCommand("dust").setTabCompleter(new Dust());
             getCommand("enchants").setExecutor(new Enchants());
             getCommand("repairscroll").setExecutor(new RepairScroll());
             getCommand("repairscroll").setTabCompleter(new RepairScroll());
+            getCommand("rewards").setExecutor(new Rewards());
             getCommand("jbe").setExecutor(new jbe());
             getCommand("jbe").setTabCompleter(new jbe());
             getCommand("test").setExecutor(new test());

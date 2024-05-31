@@ -10,6 +10,8 @@ commands:
   test:
   cleanser:
   crystal:
+  crystals:
   dust:
   enchants:
   repairscroll:
+  rewards:

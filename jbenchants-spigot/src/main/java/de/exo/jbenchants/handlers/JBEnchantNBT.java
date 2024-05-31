@@ -2,8 +2,12 @@ package de.exo.jbenchants.handlers;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
+import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.checkerframework.checker.units.qual.N;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,10 +94,37 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
         } else if (material.endsWith("_BOOTS")) {
             return "boots";
         }else if (material.equals("FISHING_ROD")) {
+            Bukkit.broadcastMessage("fishing");
             return "fishing";
         } else if (material.equals("BOW")) {
             return "bow";
         } else
             return null;
+    }
+
+    public void setCleanserChance(Player player, int chance) {
+        NBTEntity entity = new NBTEntity(player);
+        if (chance != -1) {
+            entity.getPersistentDataContainer().setInteger("used_cleanser", chance);
+        } else
+            entity.getPersistentDataContainer().removeKey("used_cleanser");
+    }
+
+    public int getCleanserChance(Player player) {
+        NBTEntity entity = new NBTEntity(player);
+        if (entity.getPersistentDataContainer().hasTag("used_cleanser")) {
+            return entity.getPersistentDataContainer().getInteger("used_cleanser");
+        }
+        return -1;
+    }
+
+    public void addPlayerCrystal(Player player, String rarity, int amount) {
+        NBTEntity entity = new NBTEntity(player);
+        entity.getPersistentDataContainer().setInteger(rarity, entity.getPersistentDataContainer().getInteger(rarity)+amount);
+    }
+
+    public int getPlayerCrystal(Player player, String rarity) {
+        NBTEntity entity = new NBTEntity(player);
+        return entity.getPersistentDataContainer().getInteger(rarity);
     }
 }

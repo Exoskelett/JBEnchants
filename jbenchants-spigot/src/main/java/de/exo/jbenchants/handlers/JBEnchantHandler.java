@@ -3,6 +3,7 @@ package de.exo.jbenchants.handlers;
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.tr7zw.nbtapi.NBTItem;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -63,7 +64,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler {
     public boolean updateCrystal(ItemStack item) {
         NBTItem nbti = new NBTItem(item);
         List<String> lore = item.getLore();
-        if (!nbti.hasTag("crystal") && lore != null) {
+        if (!nbti.hasTag("crystal") && lore != null && item.getType().equals(Material.NETHER_STAR)) {
             if (Objects.equals(lore.get(3), api.getItemLore("crystal")[3])) {
                 String rarity = lore.get(0).split(" ")[1].substring(2).substring(0, 1).toUpperCase();
                 nbti.setString("crystal", rarity);

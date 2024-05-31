@@ -23,6 +23,8 @@ public interface JBEnchantData {
 
         ItemStack getEnchantInformation(String name);
 
+        ItemStack getCleanserEnchantInformation(ItemStack item, String name);
+
         ItemStack getCrystal(String rarity);
 
         ItemStack getCrystal(String rarity, int chance);
@@ -50,6 +52,8 @@ public interface JBEnchantData {
         List<String> sortEnchantsWithLevel(List<String> list, ItemStack item);
 
         void setEnchantmentInfoMeta(ItemStack item, String name);
+
+        void setCleanserEnchantmentInfoMeta(ItemStack item, ItemStack reference, String name);
 
         List<String> getCrystalLore(String rarity, int chance);
 

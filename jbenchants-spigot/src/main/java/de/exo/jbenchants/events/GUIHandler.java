@@ -8,23 +8,28 @@ import de.exo.jbenchants.handlers.JBEnchantNBT;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class GUIHandler implements Listener {
 
     API api = Main.instance.api;
     JBEnchantItems items = Main.instance.items;
+    JBEnchantLore lore = Main.instance.lore;
     JBEnchantNBT nbt = Main.instance.nbt;
 
     @EventHandler
@@ -51,6 +56,50 @@ public class GUIHandler implements Listener {
                         player.openInventory(getEnchantsInventory());
                     }
                     break;
+                case "§8Decrypting...":
+                    event.setCancelled(true);
+                    break;
+                case "§8Cleanser §7§o(Click to remove)":
+                    event.setCancelled(true);
+                    if (event.getClickedInventory() == player.getInventory()) return;
+                    ItemStack enchItem = event.getClickedInventory().getItem(17);
+                    List<String> enchants = lore.sortEnchants(nbt.getEnchants(enchItem));
+                    if (event.getSlot() < enchants.size()) {
+                        for (int i = 0; i < player.getInventory().getSize(); i++) {
+                            ItemStack count = player.getInventory().getItem(i);
+                            if (count != null && count.equals(enchItem)) {
+                                nbt.removeEnchantment(enchItem, enchants.get(event.getSlot()).substring(2));
+                                lore.updateLore(enchItem);
+                                nbt.setCleanserChance(player, -1);
+                                player.getInventory().setItem(i, enchItem);
+                                player.getOpenInventory().close();
+                                return;
+                            }
+                        }
+                        player.getOpenInventory().close();
+                        player.sendMessage("§cSomething went wrong, please report this incident to staff!");
+                    }
+                case "§8Crystals":
+                    event.setCancelled(true);
+                    if (event.getClickedInventory() == player.getInventory() || event.getCurrentItem().getType() != Material.NETHER_STAR) return;
+                    String rarity = event.getCurrentItem().getItemMeta().getDisplayName().split(" ")[0].substring(2).toLowerCase();
+                    player = (Player) event.getWhoClicked();
+                    if (nbt.getPlayerCrystal(player, rarity) > 0) {
+                        nbt.addPlayerCrystal(player, rarity, -1);
+                        player.getInventory().addItem(items.getCrystal(rarity));
+                        player.openInventory(getCrystalsInventory(player));
+                    }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        Player player = (Player) event.getPlayer();
+        if (event.getView().getOriginalTitle().equals("§8Cleanser §7§o(Click to remove)")) {
+            if (nbt.getCleanserChance(player) != -1) {
+                player.getInventory().addItem(items.getCleanser(nbt.getCleanserChance(player)));
+                nbt.setCleanserChance(player, -1);
             }
         }
     }
@@ -98,7 +147,7 @@ public class GUIHandler implements Listener {
 
         ItemStack spacer = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta spacerMeta = spacer.getItemMeta();
-        spacerMeta.setDisplayName("");
+        spacerMeta.setDisplayName(" ");
         spacer.setItemMeta(spacerMeta);
         for (int i = 0; i < inv.getSize(); i++) {
             if (inv.getItem(i) == null) {
@@ -145,7 +194,7 @@ public class GUIHandler implements Listener {
                     inv.setItem(edgeSlots[i], epic);
                     break;
                 case "Legendary":
-                    inv.setItem(edgeSlots[i], category);
+                    inv.setItem(edgeSlots[i], legendary);
                     break;
                 case "Tool":
                     ItemMeta categoryMeta = category.getItemMeta();
@@ -171,20 +220,85 @@ public class GUIHandler implements Listener {
         for (int i = 0; i < api.getEnchantments(type.toLowerCase()).size(); i++) {
             inv.addItem(items.getEnchantInformation(api.getEnchantments(type.toLowerCase()).get(i)));
         }
-
         return inv;
     }
 
-    private List<String> getPossibleEnchants(Player player, ItemStack item, String rarity) {
-        int level = Integer.parseInt(PlaceholderAPI.setPlaceholders(player, "level_level"));
-        int maxEnchants;
+    private int[] glassSlots = {0,1,2,3,5,6,7,8,9,17,18,19,20,21,23,24,25,26};
+    public Inventory getCrystalOpeningInventory() {
+        Inventory inventory = Bukkit.createInventory(null, 27, "§8Decrypting...");
+        ItemStack decryptItem = new ItemStack(Material.NETHER_STAR);
+        ItemMeta decryptItemMeta = decryptItem.getItemMeta();
+        decryptItemMeta.setDisplayName("§7Decrypting");
+        decryptItem.setItemMeta(decryptItemMeta);
+        for (int i = 0; i < glassSlots.length; i++)
+            inventory.setItem(glassSlots[i], getRandomGlass());
+        inventory.setItem(4, decryptItem);
+        inventory.setItem(22, decryptItem);
+        return inventory;
+    }
+
+    public ItemStack getRandomGlass() {
+        Material[] glass = {Material.YELLOW_STAINED_GLASS_PANE, Material.LIME_STAINED_GLASS_PANE, Material.ORANGE_STAINED_GLASS_PANE,
+                Material.LIGHT_BLUE_STAINED_GLASS_PANE, Material.MAGENTA_STAINED_GLASS_PANE};
+        return new ItemStack(glass[new Random().nextInt(glass.length)]);
+    }
+
+    public void setRandomGlass(Player player) {
+        Inventory inventory = (Inventory) player.getOpenInventory();
+        for (int i = 0; i < glassSlots.length; i++)
+            inventory.setItem(glassSlots[i], getRandomGlass());
+    }
+
+    public Inventory getCleanserInventory(ItemStack item) {
+        Inventory inventory = Bukkit.createInventory(null, 18, "§8Cleanser §7§o(Click to remove)");
+        List<String> enchants = lore.sortEnchants(nbt.getEnchants(item));
+        for (int i = 0; i < enchants.size() && i < 17; i++) {
+            inventory.setItem(i, items.getCleanserEnchantInformation(item, enchants.get(i).substring(2)));
+        }
+        inventory.setItem(17, item);
+        ItemStack spacer = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta spacerMeta = spacer.getItemMeta();
+        spacerMeta.setDisplayName(" ");
+        spacer.setItemMeta(spacerMeta);
+        for (int k = 9; k < inventory.getSize(); k++) {
+            if (inventory.getItem(k) == null) inventory.setItem(k, spacer);
+        }
+        return inventory;
+    }
+
+    public Inventory getCrystalsInventory(Player player) {
+        Inventory inventory = Bukkit.createInventory(null, 27, "§8Crystals");
+        ItemStack crystal = new ItemStack(Material.NETHER_STAR);
+        ItemMeta crystalMeta = crystal.getItemMeta();
+        List<String> lore = new ArrayList<>();
+        String[] rarities = {"Common", "Rare", "Epic", "Legendary"};
+        for (int i = 0; i < 4; i++) {
+            crystalMeta.setDisplayName(api.getColor(rarities[i].toLowerCase())+rarities[i]+" Crystal");
+            lore.clear();
+            lore.add("§eAmount: §d"+nbt.getPlayerCrystal(player, rarities[i].toLowerCase()));
+            lore.add("§7Click to claim §bx1 "+api.getColor(rarities[i].toLowerCase())+rarities[i]+" Crystal§7!");
+            crystalMeta.setLore(lore);
+            crystal.setItemMeta(crystalMeta);
+            inventory.setItem(10+i*2, crystal);
+        }
+        ItemStack spacer = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta spacerMeta = spacer.getItemMeta();
+        spacerMeta.setDisplayName(" ");
+        spacer.setItemMeta(spacerMeta);
+        for (int i = 0; i < inventory.getSize(); i++) {
+            if (inventory.getItem(i) == null) inventory.setItem(i, spacer);
+        }
+        return inventory;
+    }
+
+    public List<String> getPossibleEnchants(Player player, ItemStack item, String rarity) {
+        int level = Integer.parseInt(PlaceholderAPI.setPlaceholders(player, "%level_level%"));
+        int maxEnchants = 8;
         List<String> possibleEnchants = api.getEnchantments(rarity);
         List<String> typeSpecificEnchants = api.getEnchantments(nbt.getCategory(item));
         possibleEnchants.retainAll(typeSpecificEnchants);
         List<String> itemEnchants = nbt.getEnchants(item);
-        if (level >= 40) {
-            maxEnchants = 8;
-        } else if (level >= 35) {
+        if (level >= 35) {
             maxEnchants = 7;
         } else if (level >= 25) {
             maxEnchants = 6;
@@ -197,38 +311,135 @@ public class GUIHandler implements Listener {
         } else {
             maxEnchants = 2;
         }
-        if (itemEnchants.size() >= maxEnchants) {  // max enchantment amount - only upgrades
-            for (String enchants : nbt.getEnchants(item)) {
-                if (nbt.getEnchantmentLevel(item, enchants) == api.getLevelCap(enchants)) {
-                    itemEnchants.remove(enchants);
+        if (itemEnchants != null) {
+            List<String> deletedEnchants = new ArrayList<>();
+            if (itemEnchants.size() >= maxEnchants) {  // max enchantment amount - only upgrades
+                for (String enchants : itemEnchants) {
+                    if (nbt.getEnchantmentLevel(item, enchants) == api.getLevelCap(enchants)) {
+                        deletedEnchants.add(enchants);
+                    }
                 }
-            }
-            if (!itemEnchants.isEmpty()) {
-                return itemEnchants;
-            } else
-                return null;
-        } else {  // new enchants can be added (- maxed enchants)
-            for (String enchants : nbt.getEnchants(item)) {
-                if (nbt.getEnchantmentLevel(item, enchants) == api.getLevelCap(enchants)) {
-                    possibleEnchants.remove(enchants);
+                for (String deletedEnchant : deletedEnchants)
+                    itemEnchants.remove(deletedEnchant);
+                itemEnchants.retainAll(possibleEnchants);
+                if (!itemEnchants.isEmpty()) {
+                    return itemEnchants;
+                } else
+                    return null;
+            } else {  // new enchants can be added (- maxed enchants)
+                if (nbt.getEnchants(item) != null) {
+                    for (String enchants : itemEnchants) {
+                        if (nbt.getEnchantmentLevel(item, enchants) == api.getLevelCap(enchants)) {
+                            deletedEnchants.add(enchants);
+                        }
+                    }
+                    for (String deletedEnchant : deletedEnchants)
+                        possibleEnchants.remove(deletedEnchant);
                 }
+
             }
-            return possibleEnchants;
+        }
+        return possibleEnchants;
+    }
+
+    public String unlockCrystal(Player player, ItemStack item, String rarity) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§8Decrypting...");
+        List<String> possibleEnchants = getPossibleEnchants(player, item, rarity);
+        if (possibleEnchants.isEmpty()) return null;
+        Collections.shuffle(possibleEnchants);
+        int start = new Random().nextInt(possibleEnchants.size());
+        boolean flipAtEnd;
+        if (Math.random() <= 0.5) {
+            flipAtEnd = true;
+            Bukkit.broadcastMessage(possibleEnchants.get(start));
+            //Bukkit.broadcastMessage(possibleEnchants.get((start+34)%possibleEnchants.size()));
+            startDecrypting(player, item, 1, 12, 3, possibleEnchants, start, true, possibleEnchants.get((start+34)%possibleEnchants.size()));
+            return possibleEnchants.get((start+34)%possibleEnchants.size());
+        } else {
+            flipAtEnd = false;
+            Bukkit.broadcastMessage(possibleEnchants.get(start));
+            //Bukkit.broadcastMessage(possibleEnchants.get((start+33)%possibleEnchants.size()));
+            startDecrypting(player, item, 1, 12, 2, possibleEnchants, start, false, possibleEnchants.get((start+33)%possibleEnchants.size()));
+            return possibleEnchants.get((start+33)%possibleEnchants.size());
         }
     }
 
-    public void unlockCrystal(Player player, ItemStack item, List<String> enchants) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§7Decrypting");
-        ItemStack decryptItem = new ItemStack(Material.WHITE_DYE);
-        ItemMeta decryptItemMeta = decryptItem.getItemMeta();
-        decryptItemMeta.setDisplayName("§8Decrypting...");
-        decryptItem.setItemMeta(decryptItemMeta);
-        BukkitScheduler scheduler = Main.instance.getServer().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(Main.instance, new Runnable() {
+    private int taskId, index = 0, lap = 1;
+
+    public void startDecrypting(Player player, ItemStack item, int phase, int countdown, int interval, List<String> enchants, int start, boolean flipAtEnd, String result) {
+        player.openInventory(getCrystalOpeningInventory());
+        this.index += countdown;
+        int[] slots = {10,11,12,13,14,15,16};
+        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.instance, new Runnable() {
             @Override
             public void run() {
-                // Do something
+                if (index == 0) {
+                    switch (phase) {
+                        case 1:
+                            stopDecrypting();
+                            lap = 1;
+                            startDecrypting(player, item, 2, 8, 3, enchants, (start+12)%enchants.size(), flipAtEnd, result);
+                            break;
+                        case 2:
+                            stopDecrypting();
+                            lap = 1;
+                            startDecrypting(player, item,  3, 6, 5, enchants, (start+8)%enchants.size(), flipAtEnd, result);
+                            break;
+                        case 3:
+                            stopDecrypting();
+                            lap = 1;
+                            startDecrypting(player, item,  4, 4, 10, enchants, (start+6)%enchants.size(), flipAtEnd, result);
+                            break;
+                        case 4:
+                            stopDecrypting();
+                            lap = 1;
+                            startDecrypting(player, item,  5, 3, 20, enchants, (start+4)%enchants.size(), flipAtEnd, result);
+                            //startDecrypting(player, 5, (int) (Math.random() * 7), 40, enchants, (start+3)%enchants.size());
+                            break;
+                        default:
+                            stopDecrypting();
+                            lore.updateLore(item);
+                            if (flipAtEnd) {
+                                for (int k = 0; k < 7; k++) {
+                                    player.getOpenInventory().setItem(slots[k], items.getEnchantInformation(enchants.get((start+k+lap-3+enchants.size())%enchants.size())));
+                                }
+                                player.sendMessage("§a§l+ "+api.getColor(api.getRarity(result))+api.getDisplayName(result)+" §7has been added to your pickaxe.");
+                            } else {
+                                player.sendMessage("§a§l+ " + api.getColor(api.getRarity(result)) + api.getDisplayName(result) + " §7has been added to your pickaxe.");
+                            }
+                            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 50, 1);
+                            break;
+                    }
+                } else {
+                    if (!player.getOpenInventory().getOriginalTitle().equals("§8Decrypting...")) {
+                        stopDecrypting();
+                        lore.updateLore(item);
+                        player.sendMessage("§a§l+ "+api.getColor(api.getRarity(result))+api.getDisplayName(result)+" §7has been added to your pickaxe.");
+                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 50, 1);
+                        return;
+                    }
+                    for (int glassSlot : glassSlots) {
+                        player.getOpenInventory().setItem(glassSlot, getRandomGlass());
+                    }
+                    for (int k = 0; k < 7; k++) {
+                        player.getOpenInventory().setItem(slots[k], items.getEnchantInformation(enchants.get((start+k+lap-3+enchants.size())%enchants.size())));
+                    }
+                    player.playSound(player.getLocation(), Sound.BLOCK_DISPENSER_DISPENSE, 30, 5);
+                    index--;
+                    lap++;
+                }
             }
-        }, 0L, 5L);
+        }, 0L, interval);
+    }
+
+    public void stopDecrypting() {
+        Bukkit.getScheduler().cancelTask(taskId);
+    }
+
+    public boolean getDecryption() {
+        if (Bukkit.getScheduler().isQueued(taskId)) {
+            return true;
+        } else
+            return false;
     }
 }

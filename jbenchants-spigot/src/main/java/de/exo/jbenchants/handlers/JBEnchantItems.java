@@ -7,7 +7,6 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 public class JBEnchantItems implements JBEnchantData.Items {
 
@@ -21,6 +20,16 @@ public class JBEnchantItems implements JBEnchantData.Items {
         ItemStack enchInfo = new ItemStack(Material.getMaterial(api.getEnchantmentMaterial(name)));
         lore.setEnchantmentInfoMeta(enchInfo, name);
         enchInfo.setItemMeta(enchInfo.getItemMeta());
+        enchInfo.getItemFlags().add(ItemFlag.HIDE_ATTRIBUTES);
+        return enchInfo;
+    }
+
+    @Override
+    public ItemStack getCleanserEnchantInformation(ItemStack item, String name) {
+        ItemStack enchInfo = new ItemStack(Material.getMaterial(api.getEnchantmentMaterial(name)));
+        lore.setCleanserEnchantmentInfoMeta(enchInfo, item, name);
+        enchInfo.setItemMeta(enchInfo.getItemMeta());
+        enchInfo.getItemFlags().add(ItemFlag.HIDE_ATTRIBUTES);
         return enchInfo;
     }
 
