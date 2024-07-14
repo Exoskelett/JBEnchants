@@ -68,7 +68,7 @@ public class JBEnchantLore implements JBEnchantData.Lore {
             for (int i = lore.size()-1; i >= 0; i--) {
                 List<String> string = List.of(lore.get(i).split(" "));
                 try {
-                    int nullCheck = Integer.parseInt(string.get(string.size()-1));
+                    int nullCheck = Integer.parseInt(string.get(string.size()-1));  // checks whether the last arg is an integer value
                     lore.remove(i);
                     continue;
                 } catch (NumberFormatException ignored) {

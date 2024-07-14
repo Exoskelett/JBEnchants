@@ -5,6 +5,7 @@ import de.exo.jbenchants.handlers.JBEnchantHandler;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.tr7zw.nbtapi.NBTItem;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,30 +20,31 @@ public class ItemUpdater implements Listener {
     JBEnchantHandler handler = Main.instance.handler;
     JBEnchantItems items = Main.instance.items;
 
-    public boolean updateItem(InventoryClickEvent event) {
+    @EventHandler
+    public void updateItem(InventoryClickEvent event) {
         try {
             Player player = (Player) event.getWhoClicked();
             ItemStack item = event.getCurrentItem();
-            if (handler.updateCrystal(item)) {
+            if (!item.getItemMeta().hasLore()) return;
+            if (event.getView().getOriginalTitle().contains("§8")) return;
+            if (nbt.updateEnchantedItem(item)) {
+                event.setCancelled(true);
+                player.sendMessage("§7An outdated enchanted item in your inventory got updated.");
+            } else if (nbt.updateCrystal(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated crystal in your inventory got updated.");
-                return true;
-            } else if (handler.updateCleanser(item)) {
+            } else if (nbt.updateCleanser(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated cleanser in your inventory got updated.");
-                return true;
-            } else if (handler.updateDust(item)) {
+            } else if (nbt.updateDust(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated dust in your inventory got updated.");
-                return true;
-            } else if (handler.updateScroll(item)) {
+            } else if (nbt.updateScroll(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated repair scroll in your inventory got updated.");
-                return true;
             }
         } catch (NullPointerException ignored) {
         }
-        return false;
     }
 
     @EventHandler

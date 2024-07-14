@@ -35,10 +35,7 @@ public class ItemMerger implements Listener {
             NBTItem originNbt = new NBTItem(origin);
             ItemStack destination = event.getCurrentItem();
             NBTItem destinationNbt = new NBTItem(destination);
-            if (!originNbt.hasTag("crystal") && !originNbt.hasTag("cleanser") && !originNbt.hasTag("dust") && !originNbt.hasTag("scroll")) {
-                new ItemUpdater().updateItem(event);
-                return;
-            }
+            if (!originNbt.hasTag("crystal") && !originNbt.hasTag("cleanser") && !originNbt.hasTag("dust") && !originNbt.hasTag("scroll")) return;
             if (originNbt.hasTag("crystal") && originNbt.getString("chance").split("-").length == 1) {
                 if (nbt.getCategory(destination) != null) {
                     if (guiHandler.getPossibleEnchants(player, destination, originNbt.getString("crystal")) != null) {
@@ -47,7 +44,10 @@ public class ItemMerger implements Listener {
                             event.setCancelled(true);
                             player.setItemOnCursor(null);
                             String addedEnchant = guiHandler.unlockCrystal(player, destination, originNbt.getString("crystal"));
-                            nbt.addEnchantmentLevel(destination, addedEnchant, 1);
+                            if (guiHandler.getLevel(player).getMaxEnchants() > nbt.getEnchants(destination).size()) {
+                                nbt.addEnchantmentLevel(destination, addedEnchant, 1);
+                            } else
+                                if (nbt.getEnchants(destination).contains(addedEnchant)) nbt.addEnchantmentLevel(destination, addedEnchant, 1);
                         } else {
                             event.setCancelled(true);
                             player.setItemOnCursor(null);
@@ -55,7 +55,7 @@ public class ItemMerger implements Listener {
                         }
                     } else {
                         event.setCancelled(true);
-                        player.sendMessage("§cThere's no enchantments of this tier left for you to get, Please try different crystal rarities.");
+                        player.sendMessage("§cThere are no more enchantments of this tier left for you to get, please try different crystal rarities.");
                     }
                 }
             } else if (originNbt.hasTag("cleanser")) {
@@ -63,7 +63,7 @@ public class ItemMerger implements Listener {
                     double chance = (double) originNbt.getInteger("cleanser")/100;
                     if (Math.random() <= chance) {
                         event.setCancelled(true);
-                        nbt.setCleanserChance(player, originNbt.getInteger("cleanser"));
+                        nbt.setUsedItemChance(player, "cleanser", originNbt.getInteger("cleanser"));
                         player.setItemOnCursor(null);
                         player.openInventory(guiHandler.getCleanserInventory(destination));
                     } else {
@@ -72,13 +72,12 @@ public class ItemMerger implements Listener {
                         nbt.removeEnchantment(destination, randomEnchant);
                         lore.updateLore(destination);
                         player.setItemOnCursor(null);
-                        player.sendMessage("§cYour cleanser failed, and removed the "+api.getColor(api.getRarity(randomEnchant))+api.getDisplayName(randomEnchant));  // TBA
+                        player.sendMessage("§cYour cleanser failed and removed a random enchantment: "+api.getColor(api.getRarity(randomEnchant))+api.getDisplayName(randomEnchant));  // TBA
                     }
                 }
             } else if (originNbt.hasTag("dust")) {
                 if (destinationNbt.hasTag("crystal") && destinationNbt.getString("chance").split("-").length == 1) {
                     if (Objects.equals(originNbt.getString("dust"), destinationNbt.getString("crystal"))) {
-                        Bukkit.broadcastMessage(destinationNbt.getInteger("chance") +" "+ originNbt.getInteger("chance"));
                         int oldChance = Integer.parseInt(destinationNbt.getString("chance"));
                         int newChance = oldChance + originNbt.getInteger("chance");
                         if (newChance > 100) newChance = 100;

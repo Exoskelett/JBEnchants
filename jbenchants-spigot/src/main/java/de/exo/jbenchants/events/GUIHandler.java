@@ -5,17 +5,24 @@ import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantLore;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
+import de.exo.jbenchants.handlers.JBEnchantRegions;
+import de.tr7zw.nbtapi.NBT;
+import de.tr7zw.nbtapi.NBTBlock;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -31,6 +38,7 @@ public class GUIHandler implements Listener {
     JBEnchantItems items = Main.instance.items;
     JBEnchantLore lore = Main.instance.lore;
     JBEnchantNBT nbt = Main.instance.nbt;
+    JBEnchantRegions regions = Main.instance.regions;
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -96,11 +104,32 @@ public class GUIHandler implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
-        if (event.getView().getOriginalTitle().equals("§8Cleanser §7§o(Click to remove)")) {
-            if (nbt.getCleanserChance(player) != -1) {
-                player.getInventory().addItem(items.getCleanser(nbt.getCleanserChance(player)));
-                nbt.setCleanserChance(player, -1);
-            }
+        switch (event.getView().getOriginalTitle()) {
+            case "§8Cleanser §7§o(Click to remove)":
+                if (nbt.getCleanserChance(player) != -1) {
+                    player.getInventory().addItem(items.getCleanser(nbt.getCleanserChance(player)));
+                    nbt.setCleanserChance(player, -1);
+                }
+                break;
+            case "§8Treasure Hunter":
+                InventoryHolder holder = event.getInventory().getHolder();
+                if (holder instanceof Chest && regions.checkBlock(((Chest) holder).getBlock(), "mine")) {
+                    ((Chest) holder).getBlock().setType(Material.AIR);
+                }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        Player player = (Player) event.getPlayer();
+        InventoryHolder holder = event.getInventory().getHolder();
+        if (holder instanceof Chest && regions.checkBlock(((Chest) holder).getBlock(), "mine") && !nbt.checkTreasureHunter(((Chest) holder).getBlock(), player)) {
+            event.setCancelled(true);
+        } else if (holder instanceof Chest && regions.checkBlock(((Chest) holder).getBlock(), "mine")) {
+            Inventory chestInventory = event.getInventory();
+            player.getWorld().getBlockAt(event.getInventory().getLocation()).setType(Material.AIR);
+            event.setCancelled(true);
+            player.openInventory(chestInventory);
         }
     }
 
@@ -292,12 +321,14 @@ public class GUIHandler implements Listener {
     }
 
     public List<String> getPossibleEnchants(Player player, ItemStack item, String rarity) {
-        int level = Integer.parseInt(PlaceholderAPI.setPlaceholders(player, "%level_level%"));
+        //int level = Integer.parseInt(PlaceholderAPI.setPlaceholders(player, "%level_level%"));
+        int level = 40;
         int maxEnchants = 8;
         List<String> possibleEnchants = api.getEnchantments(rarity);
         List<String> typeSpecificEnchants = api.getEnchantments(nbt.getCategory(item));
         possibleEnchants.retainAll(typeSpecificEnchants);
         List<String> itemEnchants = nbt.getEnchants(item);
+        itemEnchants.removeIf(enchant -> api.getRarity(enchant).equals(rarity));
         if (level >= 35) {
             maxEnchants = 7;
         } else if (level >= 25) {
@@ -313,33 +344,70 @@ public class GUIHandler implements Listener {
         }
         if (itemEnchants != null) {
             List<String> deletedEnchants = new ArrayList<>();
-            if (itemEnchants.size() >= maxEnchants) {  // max enchantment amount - only upgrades
-                for (String enchants : itemEnchants) {
-                    if (nbt.getEnchantmentLevel(item, enchants) == api.getLevelCap(enchants)) {
-                        deletedEnchants.add(enchants);
+            if (nbt.getEnchants(item).size() >= maxEnchants) {  // max enchantment amount: only upgrades
+                for (String enchant : itemEnchants) {
+                    if (nbt.getEnchantmentLevel(item, enchant) >= api.getLevelCap(enchant)) {
+                        itemEnchants.remove(enchant);
                     }
                 }
-                for (String deletedEnchant : deletedEnchants)
-                    itemEnchants.remove(deletedEnchant);
-                itemEnchants.retainAll(possibleEnchants);
                 if (!itemEnchants.isEmpty()) {
                     return itemEnchants;
                 } else
                     return null;
-            } else {  // new enchants can be added (- maxed enchants)
+            } else {  // new enchants can be added: all enchants - maxed enchants)
                 if (nbt.getEnchants(item) != null) {
-                    for (String enchants : itemEnchants) {
-                        if (nbt.getEnchantmentLevel(item, enchants) == api.getLevelCap(enchants)) {
-                            deletedEnchants.add(enchants);
+                    for (String enchant : itemEnchants) {
+                        if (nbt.getEnchantmentLevel(item, enchant) >= api.getLevelCap(enchant)) {
+                            possibleEnchants.remove(enchant);
                         }
                     }
-                    for (String deletedEnchant : deletedEnchants)
-                        possibleEnchants.remove(deletedEnchant);
                 }
 
             }
         }
         return possibleEnchants;
+    }
+
+    public LevelEnchants getLevel(Player player) {
+        //int level = Integer.parseInt(PlaceholderAPI.setPlaceholders(player, "%level_level%"));
+        LevelEnchants lE;
+        int level = 40;
+        if (level >= 35) {
+            lE = new LevelEnchants(level, 7, -1, -1);
+        } else if (level >= 25) {
+            lE = new LevelEnchants(level, 6, 35, 7);
+        } else if (level >= 15) {
+            lE = new LevelEnchants(level, 5, 25, 6);
+        } else if (level >= 10) {
+            lE = new LevelEnchants(level, 4, 15, 5);
+        } else if (level >= 5) {
+            lE = new LevelEnchants(level, 3, 10, 4);
+        } else {
+            lE = new LevelEnchants(level, 2, 5, 3);
+        }
+        return lE;
+    }
+
+    static class LevelEnchants {
+        private int level, maxEnchants, nextLevel, nextMaxEnchants;
+        public LevelEnchants(int level, int maxEnchants, int nextLevel, int nextMaxEnchants) {
+            this.level = level;
+            this.maxEnchants = maxEnchants;
+            this.nextLevel = nextLevel;
+            this.nextMaxEnchants = nextMaxEnchants;
+        }
+        public int getLevel() {
+            return level;
+        }
+        public int getMaxEnchants() {
+            return maxEnchants;
+        }
+        public int getNextLevel() {
+            return getNextLevel();
+        }
+        public int getNextMaxEnchants() {
+            return getNextMaxEnchants();
+        }
     }
 
     public String unlockCrystal(Player player, ItemStack item, String rarity) {
@@ -351,13 +419,11 @@ public class GUIHandler implements Listener {
         boolean flipAtEnd;
         if (Math.random() <= 0.5) {
             flipAtEnd = true;
-            Bukkit.broadcastMessage(possibleEnchants.get(start));
             //Bukkit.broadcastMessage(possibleEnchants.get((start+34)%possibleEnchants.size()));
             startDecrypting(player, item, 1, 12, 3, possibleEnchants, start, true, possibleEnchants.get((start+34)%possibleEnchants.size()));
             return possibleEnchants.get((start+34)%possibleEnchants.size());
         } else {
             flipAtEnd = false;
-            Bukkit.broadcastMessage(possibleEnchants.get(start));
             //Bukkit.broadcastMessage(possibleEnchants.get((start+33)%possibleEnchants.size()));
             startDecrypting(player, item, 1, 12, 2, possibleEnchants, start, false, possibleEnchants.get((start+33)%possibleEnchants.size()));
             return possibleEnchants.get((start+33)%possibleEnchants.size());
@@ -399,13 +465,31 @@ public class GUIHandler implements Listener {
                         default:
                             stopDecrypting();
                             lore.updateLore(item);
+                            player.updateInventory();
+                            LevelEnchants level = getLevel(player);
                             if (flipAtEnd) {
                                 for (int k = 0; k < 7; k++) {
                                     player.getOpenInventory().setItem(slots[k], items.getEnchantInformation(enchants.get((start+k+lap-3+enchants.size())%enchants.size())));
                                 }
-                                player.sendMessage("§a§l+ "+api.getColor(api.getRarity(result))+api.getDisplayName(result)+" §7has been added to your pickaxe.");
+                                if (level.getMaxEnchants() > nbt.getEnchants(item).size()) { // max. enchants not reached: enchant can be added
+                                    player.sendMessage("§a§l+ "+api.getColor(api.getRarity(result))+api.getDisplayName(result)+" §7has been added to your item.");
+                                } else { // max. enchants reached or gone over: enchant can be added if already on item
+                                    if (nbt.getEnchants(item).contains(result)) {
+                                        player.sendMessage("§a§l+ "+api.getColor(api.getRarity(result))+api.getDisplayName(result)+" §7has been added to your item.");
+                                    } else {
+                                        if (level.getMaxEnchants() == 8 || nbt.getEnchants(item).size() >= 8) {  // maxed. max enchants
+                                            player.sendMessage("§c§lHey! §fWe couldn't fit the enchant onto your item as the max is §c§n"+level.getMaxEnchants()+"§f enchantments. You've been returned your crystal.");
+                                        } else {  //
+                                            player.sendMessage("§c§lHey! §fWe couldn't fit the enchant onto your item as the max is §c§n"+level.getMaxEnchants()+"§f enchantments. You've been returned your crystal."
+                                            +"§7§oLevelup to §e§n§o"+level.nextLevel+"§7§o to have §c§n§o"+level.getNextMaxEnchants()+"§7§o enchants)");
+                                        }
+                                    }
+
+                                }
+
+                                player.sendMessage("§a§l+ "+api.getColor(api.getRarity(result))+api.getDisplayName(result)+" §7has been added to your item.");
                             } else {
-                                player.sendMessage("§a§l+ " + api.getColor(api.getRarity(result)) + api.getDisplayName(result) + " §7has been added to your pickaxe.");
+                                player.sendMessage("§a§l+ " + api.getColor(api.getRarity(result)) + api.getDisplayName(result) + " §7has been added to your item.");
                             }
                             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 50, 1);
                             break;
@@ -414,7 +498,8 @@ public class GUIHandler implements Listener {
                     if (!player.getOpenInventory().getOriginalTitle().equals("§8Decrypting...")) {
                         stopDecrypting();
                         lore.updateLore(item);
-                        player.sendMessage("§a§l+ "+api.getColor(api.getRarity(result))+api.getDisplayName(result)+" §7has been added to your pickaxe.");
+                        player.updateInventory();
+                        player.sendMessage("§a§l+ "+api.getColor(api.getRarity(result))+api.getDisplayName(result)+" §7has been added to your item.");
                         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 50, 1);
                         return;
                     }

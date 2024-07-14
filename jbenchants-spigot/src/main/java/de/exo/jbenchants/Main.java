@@ -1,13 +1,17 @@
 package de.exo.jbenchants;
 
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.exo.jbenchants.commands.*;
 import de.exo.jbenchants.events.GUIHandler;
 import de.exo.jbenchants.events.ItemUpdater;
 import de.exo.jbenchants.events.ItemMerger;
 import de.exo.jbenchants.handlers.*;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -16,10 +20,13 @@ public class Main extends JavaPlugin {
     public API api;
     public JBEnchantNBT nbt;
     public JBEnchantLore lore;
+    public JBEnchantRegions regions;
     public JBEnchantHandler handler;
     public JBEnchantItems items;
     public GUIHandler guiHandler;
     public static Main instance;
+
+    private static Economy eco = null;
 
     @Override
     public void onEnable() {
@@ -37,6 +44,7 @@ public class Main extends JavaPlugin {
         this.api = new MySQL(host, database, username, password);
         nbt = new JBEnchantNBT();
         lore = new JBEnchantLore();
+        regions = new JBEnchantRegions();
         handler = new JBEnchantHandler();
         items = new JBEnchantItems();
         guiHandler = new GUIHandler();
@@ -47,7 +55,9 @@ public class Main extends JavaPlugin {
 
             Bukkit.getPluginManager().registerEvents(new GUIHandler(), this);
             Bukkit.getPluginManager().registerEvents(new ItemMerger(), this);
+            Bukkit.getPluginManager().registerEvents(new ItemUpdater(), this);
             Bukkit.getPluginManager().registerEvents(new ToolReader(), this);
+            Bukkit.getPluginManager().registerEvents(new JBEnchantHandler(), this);
             getCommand("cleanser").setExecutor(new Cleanser());
             getCommand("cleanser").setTabCompleter(new Cleanser());
             getCommand("crystal").setExecutor(new Crystal());
@@ -69,5 +79,13 @@ public class Main extends JavaPlugin {
     @Override
     public void onDisable() {
 
+    }
+
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) return false;
+        eco = rsp.getProvider();
+        return true;
     }
 }

@@ -4,15 +4,20 @@ import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantLore;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
+import de.tr7zw.nbtapi.NBTBlock;
 import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
 import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Set;
 
 public class test implements CommandExecutor {
     API api = Main.instance.api;
@@ -26,7 +31,8 @@ public class test implements CommandExecutor {
             Player player = (Player) sender;
             ItemStack item = player.getInventory().getItemInMainHand();
             NBTItem nbti = new NBTItem(item);
-            NBTEntity entity = new NBTEntity(player);
+            NBTEntity nbte = new NBTEntity(player);
+            NBTBlock nbtb = new NBTBlock(player.getTargetBlock((Set<Material>) null, 10));
             switch (args.length) {
                 case 0:
                     player.sendMessage("Debug:\n"
@@ -43,16 +49,30 @@ public class test implements CommandExecutor {
                                     player.sendMessage(keys + " - " + nbti.getInteger(keys));
                             }
                             break;
-                        case "enbt":
-                            for (String keys : entity.getPersistentDataContainer().getKeys()) {
-                                if (!entity.getPersistentDataContainer().getString(keys).isEmpty())
-                                    player.sendMessage(keys + " - " + entity.getPersistentDataContainer().getString(keys));
-                                if (entity.getPersistentDataContainer().getInteger(keys) != 0)
-                                    player.sendMessage(keys + " - " + entity.getPersistentDataContainer().getInteger(keys));
+                        case "nbte":
+                            for (String keys : nbte.getPersistentDataContainer().getKeys()) {
+                                if (!nbte.getPersistentDataContainer().getString(keys).isEmpty())
+                                    player.sendMessage(keys + " - " + nbte.getPersistentDataContainer().getString(keys));
+                                if (nbte.getPersistentDataContainer().getInteger(keys) != 0)
+                                    player.sendMessage(keys + " - " + nbte.getPersistentDataContainer().getInteger(keys));
                             }
+                            break;
+                        case "nbtb":
+                            for (String keys : nbtb.getData().getKeys()) {
+                                if (!nbtb.getData().getString(keys).isEmpty())
+                                    player.sendMessage(keys + " - " + nbtb.getData().getString(keys));
+                                if (nbtb.getData().getInteger(keys) != 0)
+                                    player.sendMessage(keys + " - " + nbtb.getData().getInteger(keys));
+                            }
+                            break;
                         case "update":
                             player.sendMessage("Updating Lore:");
                             lore.updateLore(item);
+                            break;
+                        case "updateItem":
+                            if (item.getItemMeta().hasLore()) {
+
+                            }
                             break;
                         case "delete":
                             player.sendMessage("Deleting Lore:");
@@ -69,6 +89,20 @@ public class test implements CommandExecutor {
                             player.sendMessage("Rarity: "+nbti.getString("crystal"));
                             player.sendMessage("Chance: "+nbti.getString("chance"));
                             break;
+                        case "enchants":
+                            if (!item.getEnchantments().isEmpty()) {
+                                player.sendMessage(item.getEnchantments().toString());
+                            } else
+                                player.sendMessage("§cKeine Enchants :/");
+                            break;
+                        case "lock":
+                            if (nbt.checkLockedBlock(player.getTargetBlock((Set<Material>) null, 10))) {
+                                nbt.lockBlock(player.getTargetBlock((Set<Material>) null, 10), false);
+                                player.sendMessage("§aBlock has been unlocked.");
+                            } else {
+                                nbt.lockBlock(player.getTargetBlock((Set<Material>) null, 10), true);
+                                player.sendMessage("§cBlock has been locked.");
+                            }
                     }
                 case 2:
                     switch (args[0]) {

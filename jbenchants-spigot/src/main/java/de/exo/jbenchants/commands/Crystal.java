@@ -50,7 +50,6 @@ public class Crystal implements CommandExecutor, TabCompleter {
                             default:
                                 sender.sendMessage("§cToo many arguments.");
                         }
-                        sender.sendMessage(target.getDisplayName() + " §7received §f1x " + crystal.getItemMeta().getDisplayName());
                         target.getInventory().addItem(crystal);
                         break;
                     case "mystery":
