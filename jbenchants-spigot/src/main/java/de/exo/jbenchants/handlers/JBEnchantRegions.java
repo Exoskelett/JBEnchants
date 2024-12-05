@@ -8,7 +8,6 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,6 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JBEnchantRegions implements JBEnchantData.Regions {
+
+    private static JBEnchantRegions INSTANCE;
+    private JBEnchantRegions() {
+    }
+    public static JBEnchantRegions getInstance() {
+        if (INSTANCE == null) INSTANCE = new JBEnchantRegions();
+        return INSTANCE;
+    }
 
     RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
 

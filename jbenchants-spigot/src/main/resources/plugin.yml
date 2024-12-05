@@ -7,11 +7,10 @@ depend: [NBTAPI, PlaceholderAPI, WorldEdit, WorldGuard]
 
 commands:
   jbe:
-  test:
+  jbdebug:
   cleanser:
   crystal:
   crystals:
   dust:
   enchants:
   repairscroll:
-  rewards:

@@ -14,9 +14,6 @@ public interface JBEnchantData {
     public interface Items {
         ItemStack getEnchantInformation(String name);
         ItemStack getCleanserEnchantInformation(ItemStack item, String name);
-        ItemStack getCrystal(String rarity);
-        ItemStack getCrystal(String rarity, int chance);
-        ItemStack getMysteryCrystal(String rarity, int low, int high);
         ItemStack getDust(String rarity);
         ItemStack getDust(String rarity, int chance);
         ItemStack getCleanser();
@@ -53,7 +50,6 @@ public interface JBEnchantData {
         public void removeEnchantment(ItemStack item, String name);
         public int getEnchantmentLevel(ItemStack item, String name);
         public List<String> getEnchants(ItemStack item);
-        public boolean checkLevelCap(ItemStack item, String name, int level);
 
         void setEnchantGlow(ItemStack item, boolean glowState);
 

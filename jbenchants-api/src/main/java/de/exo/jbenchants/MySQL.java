@@ -1,5 +1,6 @@
 package de.exo.jbenchants;
 
+import java.io.Console;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ public class MySQL implements API {
             getConnection();
             return true;
         } catch (SQLException e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -102,8 +104,8 @@ public class MySQL implements API {
             ps.setBoolean(7, false);
             ps.setBoolean(8, false);
             ps.setBoolean(9, false);
-            ps.setString(10, null);
-            ps.setString(11, null);
+            ps.setString(10, "ENCHANTED_BOOK");
+            ps.setString(11, "N/A");
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

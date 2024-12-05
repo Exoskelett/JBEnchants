@@ -32,10 +32,18 @@ import java.util.*;
 
 public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
 
-    API api = Main.instance.api;
-    JBEnchantNBT nbt = Main.instance.nbt;
-    JBEnchantLore lore = Main.instance.lore;
-    JBEnchantRegions regions = Main.instance.regions;
+    private static JBEnchantHandler INSTANCE;
+    private JBEnchantHandler() {
+    }
+    public static JBEnchantHandler getInstance() {
+        if (INSTANCE == null) INSTANCE = new JBEnchantHandler();
+        return INSTANCE;
+    }
+
+    API api = Main.getAPI();
+    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
+    JBEnchantLore lore = JBEnchantLore.getInstance();
+    JBEnchantRegions regions = JBEnchantRegions.getInstance();
 
     public void proccToolEnchant(Player player, ItemStack tool, List<String> list, Block block) throws InterruptedException {
         List<String> notify = new ArrayList<>();

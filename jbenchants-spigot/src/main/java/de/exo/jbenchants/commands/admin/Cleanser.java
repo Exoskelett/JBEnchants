@@ -1,7 +1,8 @@
-package de.exo.jbenchants.commands;
+package de.exo.jbenchants.commands.admin;
 
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantItems;
+import de.exo.jbenchants.handlers.ToolReader;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,42 +16,37 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Dust implements CommandExecutor, TabCompleter {
+public class Cleanser implements CommandExecutor, TabCompleter {
 
-    JBEnchantItems items = Main.instance.items;
+    JBEnchantItems items = JBEnchantItems.getInstance();
 
-    String dustSyntax = "§c/dust [player] [amount] <rarity> <chance>";
+    String cleanserSyntax = "§c/cleanser [player] <amount> <chance>";
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (args.length > 0) {
             try {
                 Player target = Bukkit.getPlayer(args[0]);
-                ItemStack dust = null;
+                ItemStack cleanser = null;
                 switch (args.length) {
                     case 1:  // player
-                        dust = items.getDust("random");
-                        sender.sendMessage(target.getDisplayName() + " §7received §f1x " + dust.getItemMeta().getDisplayName());
+                        cleanser = items.getCleanser();
+                        sender.sendMessage(target.getDisplayName() + " §7received §f1x " + cleanser.getItemMeta().getDisplayName());
                         break;
                     case 2:  // player + amount
-                        dust = items.getDust("random");
-                        dust.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().getDisplayName());
+                        cleanser = items.getCleanser();
+                        cleanser.setAmount(Integer.parseInt(args[1]));
+                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + cleanser.getItemMeta().getDisplayName());
                         break;
-                    case 3:  // player + amount + rarity
-                        dust = items.getDust(args[2]);
-                        dust.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().getDisplayName());
-                        break;
-                    case 4:  // player + amount + rarity + chance
-                        dust = items.getDust(args[2], Integer.parseInt(args[3]));
-                        dust.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().getDisplayName());
+                    case 3:  // player + amount + chance
+                        cleanser = items.getCleanser(Integer.parseInt(args[2]));
+                        cleanser.setAmount(Integer.parseInt(args[1]));
+                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + cleanser.getItemMeta().getDisplayName());
                         break;
                     default:
-                        sender.sendMessage(dustSyntax);
+                        sender.sendMessage(cleanserSyntax);
                 }
-                target.getInventory().addItem(dust);
+                target.getInventory().addItem(cleanser);
             } catch (NullPointerException e) {
                 sender.sendMessage("§c'" + args[0] + "' is not online.");
                 e.printStackTrace();
@@ -61,7 +57,7 @@ public class Dust implements CommandExecutor, TabCompleter {
                 }
             }
         } else
-            sender.sendMessage(dustSyntax);
+            sender.sendMessage(cleanserSyntax);
         return false;
     }
 
@@ -70,13 +66,7 @@ public class Dust implements CommandExecutor, TabCompleter {
         List<String> completer = new ArrayList<>();
         if (args.length > 0) {
             switch (args.length) {
-                case 3:
-                    completer.add("common");
-                    completer.add("rare");
-                    completer.add("epic");
-                    completer.add("legendary");
-                    return completer;
-                case 2, 4:
+                case 2, 3:
                     completer.add("");
                     return completer;
             }

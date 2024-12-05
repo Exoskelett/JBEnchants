@@ -3,6 +3,7 @@ package de.exo.jbenchants.handlers;
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.tr7zw.nbtapi.NBTBlock;
+import de.tr7zw.nbtapi.NBTCompound;
 import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.Material;
@@ -21,7 +22,15 @@ import java.util.Objects;
 
 public class JBEnchantNBT implements JBEnchantData.NBT {
 
-    API api = Main.instance.api;
+    private static JBEnchantNBT INSTANCE;
+    private JBEnchantNBT() {
+    }
+    public static JBEnchantNBT getInstance() {
+        if (INSTANCE == null) INSTANCE = new JBEnchantNBT();
+        return INSTANCE;
+    }
+
+    API api = Main.getAPI();
 
     public void addEnchantmentLevel(ItemStack item, String name, int level) {
         NBTItem nbti = new NBTItem(item);
@@ -37,6 +46,7 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
             setEnchantmentLevel(item, name, nbti.getInteger(name)+level);
         }
     }
+
     public void setEnchantmentLevel(ItemStack item, String name, int level) {
         NBTItem nbti = new NBTItem(item);
         if (level <= 0) {
@@ -50,6 +60,7 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
             addEnchantmentLevel(item, name, level);
         }
     }
+
     public void removeEnchantment(ItemStack item, String name) {
         NBTItem nbti = new NBTItem(item);
         if (nbti.hasTag(name)) {
@@ -60,13 +71,13 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
             setEnchantGlow(item, false);
         }
     }
+
     public int getEnchantmentLevel(ItemStack item, String name) {
         NBTItem nbti = new NBTItem(item);
-        if (nbti.hasTag(name)) {
-            return nbti.getInteger(name);
-        }
+        if (nbti.hasTag(name)) return nbti.getInteger(name);
         return 0;
     }
+
     public List<String> getEnchants(ItemStack item) {
         NBTItem nbti = new NBTItem(item);
         List<String> enchants = new ArrayList<>();
@@ -79,17 +90,10 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
                 }
                 if (i == nbti.getInteger("jbenchants")) break;
             }
-            return enchants;
-        } else
-            return null;
+        }
+        return enchants;
     }
-    public boolean checkLevelCap(ItemStack item, String name, int level) {
-        NBTItem nbti = new NBTItem(item);
-        int cap = api.getLevelCap(name);
-        if (nbti.hasTag(name)) {
-            return cap - nbti.getInteger(name) >= level;
-        } else return level <= cap;
-    }
+
     public String getCategory(ItemStack item) {
         String material = item.getType().toString();
         if (material.endsWith("_PICKAXE") || material.endsWith("_SHOVEL")) {
@@ -116,18 +120,31 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
 
     public void setUsedItemChance(Player player, String item_used, int chance) {
         NBTEntity entity = new NBTEntity(player);
-        if (chance > 0) {
-            entity.getPersistentDataContainer().setInteger("used_"+item_used.toLowerCase(), chance);
+        if (chance >= 0) {
+            entity.getPersistentDataContainer().setInteger("used_" + item_used.toLowerCase(), chance);
         } else
-            entity.getPersistentDataContainer().removeKey("used_"+item_used.toLowerCase());
+            entity.getPersistentDataContainer().removeKey("used_" + item_used.toLowerCase());
     }
 
-    public int getUsedItemChance(Player player, String item_used) {
-        NBTEntity entity = new NBTEntity(player);
-        if (entity.getPersistentDataContainer().hasTag("used_"+item_used.toLowerCase())) {
-            return entity.getPersistentDataContainer().getInteger("used_"+item_used.toLowerCase());
+    public String getUsedItemChance(Player player, String item_used) {
+        NBTCompound entity = new NBTEntity(player).getPersistentDataContainer();
+        switch (item_used) {
+            case "cleanser":
+                if (entity.hasTag("used_cleanser")) return entity.getInteger("used_cleanser").toString();
+                break;
+            case "crystal":
+                if (entity.hasTag("used_common")) {
+                    return "common-" + entity.getInteger("used_common");
+                } else if (entity.hasTag("used_rare")) {
+                    return "rare-" + entity.getInteger("used_rare");
+                } else if (entity.hasTag("used_epic")) {
+                    return "epic-" + entity.getInteger("used_epic");
+                } else if (entity.hasTag("used_legendary")) {
+                    return "legendary-" + entity.getInteger("used_legendary");
+                }
+                break;
         }
-        return -1;
+        return null;
     }
 
     public void addPlayerCrystals(Player player, String rarity, int amount) {
@@ -154,10 +171,11 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
         ItemMeta meta = item.getItemMeta();
         if (applyGlow && !meta.hasEnchant(Enchantment.LURE)) {
             meta.addEnchant(Enchantment.LURE, 0, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         } else if (!applyGlow && meta.hasEnchant(Enchantment.LURE)) {
             meta.removeEnchant(Enchantment.LURE);
+            meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(meta);
     }
 
@@ -194,7 +212,7 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
         NBTItem nbti = new NBTItem(item);
         List<String> lore = item.getLore();
         if (!nbti.hasTag("jbenchants") && lore != null && item.getType() != Material.NETHER_STAR && item.getType() != Material.SUGAR && item.getType() != Material.GUNPOWDER && item.getType() != Material.PAPER) {
-            List<Integer> enchantLoreSlots = new JBEnchantLore().getEnchantmentLoreSlots(item);
+            List<Integer> enchantLoreSlots = JBEnchantLore.getInstance().getEnchantmentLoreSlots(item);
             if (enchantLoreSlots == null) return false;
             boolean prefix = (lore.get(0).split(" ").length == 3);
             for (Integer enchantLoreSlot : enchantLoreSlots) {  // add enchants

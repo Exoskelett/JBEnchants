@@ -4,6 +4,7 @@ import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantHandler;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
+import de.exo.jbenchants.items.Crystal;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -16,9 +17,18 @@ import org.bukkit.inventory.ItemStack;
 
 public class ItemUpdater implements Listener {
 
-    JBEnchantNBT nbt = Main.instance.nbt;
-    JBEnchantHandler handler = Main.instance.handler;
-    JBEnchantItems items = Main.instance.items;
+    private static ItemUpdater INSTANCE;
+    private ItemUpdater() {
+    }
+    public static ItemUpdater getInstance() {
+        if (INSTANCE == null) INSTANCE = new ItemUpdater();
+        return INSTANCE;
+    }
+
+    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
+    JBEnchantHandler handler = JBEnchantHandler.getInstance();
+    JBEnchantItems items = JBEnchantItems.getInstance();
+    Crystal crystal = Crystal.getInstance();
 
     @EventHandler
     public void updateItem(InventoryClickEvent event) {
@@ -62,7 +72,7 @@ public class ItemUpdater implements Listener {
                     int slot = player.getInventory().getHeldItemSlot();
                     item.setAmount(item.getAmount()-1);
                     player.getInventory().setItem(slot, item);
-                    player.getInventory().addItem(items.getCrystal(nbti.getString("crystal"), chance));
+                    player.getInventory().addItem(crystal.getCrystal(nbti.getString("crystal"), chance));
                     player.updateInventory();
                 } else
                     event.setCancelled(false);

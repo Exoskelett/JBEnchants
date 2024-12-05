@@ -13,9 +13,17 @@ import java.util.List;
 
 public class JBEnchantLore implements JBEnchantData.Lore {
 
-    API api = Main.instance.api;
+    private static JBEnchantLore INSTANCE;
+    private JBEnchantLore() {
+    }
+    public static JBEnchantLore getInstance() {
+        if (INSTANCE == null) INSTANCE = new JBEnchantLore();
+        return INSTANCE;
+    }
+
+    API api = Main.getAPI();
     Configuration config = Main.instance.getConfig();
-    JBEnchantNBT nbt = Main.instance.nbt;
+    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
 
     @Override
     public List<Integer> getEnchantmentLoreSlots(ItemStack item) {

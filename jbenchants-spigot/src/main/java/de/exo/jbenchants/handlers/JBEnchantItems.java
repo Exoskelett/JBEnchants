@@ -7,20 +7,36 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 
 public class JBEnchantItems implements JBEnchantData.Items {
 
-    API api = Main.instance.api;
-    JBEnchantLore lore = Main.instance.lore;
+    private static JBEnchantItems INSTANCE;
+    private JBEnchantItems() {
+    }
+    public static JBEnchantItems getInstance() {
+        if (INSTANCE == null) INSTANCE = new JBEnchantItems();
+        return INSTANCE;
+    }
+
+    API api = Main.getAPI();
+    JBEnchantLore lore = JBEnchantLore.getInstance();
 
     // Information
 
     @Override
     public ItemStack getEnchantInformation(String name) {
         ItemStack enchInfo = new ItemStack(Material.getMaterial(api.getEnchantmentMaterial(name)));
+        if (name == "regenerate") {
+            PotionMeta enchMeta = (PotionMeta) enchInfo.getItemMeta();
+            enchMeta.setBasePotionType(PotionType.LONG_REGENERATION);
+            enchInfo.setItemMeta(enchMeta);
+        }
         lore.setEnchantmentInfoMeta(enchInfo, name);
-        enchInfo.setItemMeta(enchInfo.getItemMeta());
         enchInfo.getItemFlags().add(ItemFlag.HIDE_ATTRIBUTES);
+        enchInfo.setItemMeta(enchInfo.getItemMeta());
         return enchInfo;
     }
 
@@ -31,77 +47,6 @@ public class JBEnchantItems implements JBEnchantData.Items {
         enchInfo.setItemMeta(enchInfo.getItemMeta());
         enchInfo.getItemFlags().add(ItemFlag.HIDE_ATTRIBUTES);
         return enchInfo;
-    }
-
-    // Crystals
-
-    @Override
-    public ItemStack getCrystal(String rarity) {
-        int chance = (int) Math.floor(Math.random()*100);
-        switch (rarity) {
-            case "random":
-                if (Math.random() <= 0.22)
-                    return getCrystal("legendary", chance);
-                if (Math.random() <= 0.3)
-                    return getCrystal("epic", chance);
-                if (Math.random() <= 0.45)
-                    return getCrystal("rare", chance);
-                return getCrystal("common", chance);
-            default:
-                return getCrystal(rarity, chance);
-        }
-    }
-    @Override
-    public ItemStack getCrystal(String rarity, int chance) {
-        ItemStack item = new ItemStack(Material.NETHER_STAR);
-        item.getItemMeta().addEnchant(Enchantment.LUCK, 1, true);
-        item.setItemMeta(item.getItemMeta());
-        item.getItemFlags().add(ItemFlag.HIDE_ENCHANTS);
-        NBTItem nbti = new NBTItem(item);
-        switch (rarity) {
-            case "legendary", "epic", "rare", "common":
-                nbti.setString("crystal", rarity);
-                nbti.applyNBT(item);
-                break;
-            default:
-                if (Math.random() <= 0.22) {
-                    nbti.setString("crystal", "legendary");
-                } else if (Math.random() <= 0.3) {
-                    nbti.setString("crystal", "epic");
-                } else if (Math.random() <= 0.45) {
-                    nbti.setString("crystal", "rare");
-                } else
-                    nbti.setString("crystal", "common");
-        }
-        nbti.setString("chance", ""+chance);
-        nbti.applyNBT(item);
-        lore.setCrystalMeta(item, rarity, chance);
-        return item;
-    }
-    @Override
-    public ItemStack getMysteryCrystal(String rarity, int low, int high) {
-        ItemStack item = new ItemStack(Material.NETHER_STAR);
-        item.getItemMeta().addEnchant(Enchantment.LUCK, 1, true);
-        item.setItemMeta(item.getItemMeta());
-        item.getItemFlags().add(ItemFlag.HIDE_ENCHANTS);
-        NBTItem nbti = new NBTItem(item);
-        switch (rarity) {
-            case "legendary", "epic", "rare", "common":
-                nbti.setString("crystal", rarity);
-                nbti.setString("chance", low+"-"+high);
-                break;
-            default:
-                if (Math.random() <= 0.22)
-                    return getMysteryCrystal("legendary", low, high);
-                if (Math.random() <= 0.3)
-                    return getMysteryCrystal("epic", low, high);
-                if (Math.random() <= 0.45)
-                    return getMysteryCrystal("rare", low, high);
-                return getMysteryCrystal("common", low, high);
-        }
-        nbti.applyNBT(item);
-        lore.setMysteryCrystalMeta(item, rarity, low, high);
-        return item;
     }
 
     // Dust

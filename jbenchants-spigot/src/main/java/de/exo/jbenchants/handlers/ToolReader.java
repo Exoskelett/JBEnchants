@@ -26,11 +26,19 @@ import java.util.Objects;
 
 public class ToolReader implements Listener {
 
-    API api = Main.instance.api;
-    JBEnchantNBT nbt = Main.instance.nbt;
-    JBEnchantLore lore = Main.instance.lore;
-    JBEnchantHandler handler = Main.instance.handler;
-    JBEnchantRegions regions = Main.instance.regions;
+    private static ToolReader INSTANCE;
+    private ToolReader() {
+    }
+    public static ToolReader getInstance() {
+        if (INSTANCE == null) INSTANCE = new ToolReader();
+        return INSTANCE;
+    }
+
+    API api = Main.getAPI();
+    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
+    JBEnchantLore lore = JBEnchantLore.getInstance();
+    JBEnchantHandler handler = JBEnchantHandler.getInstance();
+    JBEnchantRegions regions = JBEnchantRegions.getInstance();
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) throws InterruptedException {
