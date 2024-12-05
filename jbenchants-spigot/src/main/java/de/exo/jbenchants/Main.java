@@ -20,6 +20,7 @@ public class Main extends JavaPlugin {
     public static API api = getAPI();;
     public static Main instance;
 
+    @SuppressWarnings("unused")
     private static Economy eco = null;
 
     @Override
@@ -63,19 +64,22 @@ public class Main extends JavaPlugin {
         if (!api.isConnected()) {
             Configuration config = YamlConfiguration.loadConfiguration(new File("./plugins/JBEnchants", "config.yml"));
             String host = config.getString("host");
-            String port = config.getString("port");
+            int port = config.getInt("port");
             String database = config.getString("database");
             String username = config.getString("username");
             String password = config.getString("password");
-            api = new MySQL(host, database, username, password);
+            api = new MySQL(host, port, database, username, password);
         }
         return api;
     }
 
+    @SuppressWarnings("unused")
     private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
+        if (getServer().getPluginManager().getPlugin("Vault") == null)
+            return false;
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) return false;
+        if (rsp == null)
+            return false;
         eco = rsp.getProvider();
         return true;
     }

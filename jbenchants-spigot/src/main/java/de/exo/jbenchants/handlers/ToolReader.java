@@ -1,14 +1,5 @@
 package de.exo.jbenchants.handlers;
 
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.util.Location;
-import com.sk89q.worldedit.world.World;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import org.bukkit.Material;

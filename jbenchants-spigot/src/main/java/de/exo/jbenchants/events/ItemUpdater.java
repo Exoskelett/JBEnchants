@@ -1,12 +1,10 @@
 package de.exo.jbenchants.events;
 
-import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantHandler;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.exo.jbenchants.items.Crystal;
 import de.tr7zw.nbtapi.NBTItem;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

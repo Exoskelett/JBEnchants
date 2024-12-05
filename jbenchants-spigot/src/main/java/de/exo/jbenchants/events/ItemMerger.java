@@ -8,8 +8,6 @@ import de.exo.jbenchants.handlers.JBEnchantLore;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.exo.jbenchants.items.Crystal;
 import de.tr7zw.nbtapi.NBTItem;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -57,7 +55,7 @@ public class ItemMerger implements Listener {
                         player.setItemOnCursor(null);
                         if (Math.random() <= chance) {
                             nbt.setUsedItemChance(player, originNbt.getString("crystal"), Integer.parseInt(originNbt.getString("chance")));
-                            String addedEnchant = crystal.unlockCrystal(player, destination, originNbt.getString("crystal"));
+                            // String addedEnchant = crystal.unlockCrystal(player, destination, originNbt.getString("crystal"));
                         } else {
                             player.sendMessage("§cYour crystal failed.");
                         }
