@@ -1,5 +1,6 @@
 package de.exo.jbenchants;
 
+import java.io.Console;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ public class MySQL implements API {
             getConnection();
             return true;
         } catch (SQLException e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -102,8 +104,8 @@ public class MySQL implements API {
             ps.setBoolean(7, false);
             ps.setBoolean(8, false);
             ps.setBoolean(9, false);
-            ps.setString(10, null);
-            ps.setString(11, null);
+            ps.setString(10, "ENCHANTED_BOOK");
+            ps.setString(11, "N/A");
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -182,6 +184,14 @@ public class MySQL implements API {
                 case "armor":
                     getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
                             + "WHERE category='armor' OR category='helmet' OR category='chestplate' OR category='leggings' OR category='boots' OR category='*'");
+                    break;
+                case "fishing":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE category='fishing' OR category='*'");
+                    break;
+                case "bow":
+                    getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments "
+                            + "WHERE category='bow' OR category='*'");
                     break;
                 default:
                     getEnchants = getConnection().prepareStatement("SELECT * FROM enchantments WHERE category=? OR category='*'");

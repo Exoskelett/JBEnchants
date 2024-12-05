@@ -13,9 +13,17 @@ import java.util.List;
 
 public class JBEnchantLore implements JBEnchantData.Lore {
 
-    API api = Main.instance.api;
+    private static JBEnchantLore INSTANCE;
+    private JBEnchantLore() {
+    }
+    public static JBEnchantLore getInstance() {
+        if (INSTANCE == null) INSTANCE = new JBEnchantLore();
+        return INSTANCE;
+    }
+
+    API api = Main.getAPI();
     Configuration config = Main.instance.getConfig();
-    JBEnchantNBT nbt = Main.instance.nbt;
+    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
 
     @Override
     public List<Integer> getEnchantmentLoreSlots(ItemStack item) {
@@ -68,7 +76,7 @@ public class JBEnchantLore implements JBEnchantData.Lore {
             for (int i = lore.size()-1; i >= 0; i--) {
                 List<String> string = List.of(lore.get(i).split(" "));
                 try {
-                    int nullCheck = Integer.parseInt(string.get(string.size()-1));
+                    int nullCheck = Integer.parseInt(string.get(string.size()-1));  // checks whether the last arg is an integer value
                     lore.remove(i);
                     continue;
                 } catch (NumberFormatException ignored) {
@@ -204,7 +212,24 @@ public class JBEnchantLore implements JBEnchantData.Lore {
         lore.add("§7Rarity: "+api.getColor(api.getRarity(name))+api.getRarity(name).substring(0, 1).toUpperCase()+api.getRarity(name).substring(1));
         lore.add("§7Max Level: §e"+api.getLevelCap(name));
         lore.add("");
-        lore.addAll(List.of(api.getEnchantmentLore(name).split(":nl:")));
+        for (int i = 0; i < api.getEnchantmentLore(name).split(":nl:").length; i++) {
+            lore.add("§7"+api.getEnchantmentLore(name).split(":nl:")[i]);
+        }
+        meta.setLore(lore);
+        meta.setDisplayName(api.getColor(api.getRarity(name))+"§n"+api.getDisplayName(name));
+        item.setItemMeta(meta);
+    }
+
+    @Override
+    public void setCleanserEnchantmentInfoMeta(ItemStack item, ItemStack reference, String name) {
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = new ArrayList<>();
+        lore.add("§7Rarity: "+api.getColor(api.getRarity(name))+api.getRarity(name).substring(0, 1).toUpperCase()+api.getRarity(name).substring(1));
+        lore.add("§7Level: §e"+nbt.getEnchantmentLevel(reference, name)+" §8(§e"+api.getLevelCap(name)+"§8)");
+        lore.add("");
+        for (int i = 0; i < api.getEnchantmentLore(name).split(":nl:").length; i++) {
+            lore.add("§7"+api.getEnchantmentLore(name).split(":nl:")[i]);
+        }
         meta.setLore(lore);
         meta.setDisplayName(api.getColor(api.getRarity(name))+"§n"+api.getDisplayName(name));
         item.setItemMeta(meta);

@@ -3,13 +3,14 @@ version: '${project.version}'
 api-version: 1.20
 main: de.exo.jbenchants.Main
 authors: [Exoskelett]
-depend: [NBTAPI, PlaceholderAPI]
+depend: [NBTAPI, PlaceholderAPI, WorldEdit, WorldGuard]
 
 commands:
   jbe:
-  test:
+  jbdebug:
   cleanser:
   crystal:
+  crystals:
   dust:
   enchants:
   repairscroll:

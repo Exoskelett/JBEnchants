@@ -4,7 +4,9 @@ import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantHandler;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
+import de.exo.jbenchants.items.Crystal;
 import de.tr7zw.nbtapi.NBTItem;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,28 +17,43 @@ import org.bukkit.inventory.ItemStack;
 
 public class ItemUpdater implements Listener {
 
-    JBEnchantNBT nbt = Main.instance.nbt;
-    JBEnchantHandler handler = Main.instance.handler;
-    JBEnchantItems items = Main.instance.items;
+    private static ItemUpdater INSTANCE;
+    private ItemUpdater() {
+    }
+    public static ItemUpdater getInstance() {
+        if (INSTANCE == null) INSTANCE = new ItemUpdater();
+        return INSTANCE;
+    }
+
+    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
+    JBEnchantHandler handler = JBEnchantHandler.getInstance();
+    JBEnchantItems items = JBEnchantItems.getInstance();
+    Crystal crystal = Crystal.getInstance();
 
     @EventHandler
-    public void onItemClickUpdate(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        ItemStack item = event.getCurrentItem();
-        if (item != null) {
-            if (handler.updateCrystal(item)) {
+    public void updateItem(InventoryClickEvent event) {
+        try {
+            Player player = (Player) event.getWhoClicked();
+            ItemStack item = event.getCurrentItem();
+            if (!item.getItemMeta().hasLore()) return;
+            if (event.getView().getOriginalTitle().contains("§8")) return;
+            if (nbt.updateEnchantedItem(item)) {
+                event.setCancelled(true);
+                player.sendMessage("§7An outdated enchanted item in your inventory got updated.");
+            } else if (nbt.updateCrystal(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated crystal in your inventory got updated.");
-            } else if (handler.updateCleanser(item)) {
+            } else if (nbt.updateCleanser(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated cleanser in your inventory got updated.");
-            } else if (handler.updateDust(item)) {
+            } else if (nbt.updateDust(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated dust in your inventory got updated.");
-            } else if (handler.updateScroll(item)) {
+            } else if (nbt.updateScroll(item)) {
                 event.setCancelled(true);
                 player.sendMessage("§7An outdated repair scroll in your inventory got updated.");
             }
+        } catch (NullPointerException ignored) {
         }
     }
 
@@ -55,7 +72,7 @@ public class ItemUpdater implements Listener {
                     int slot = player.getInventory().getHeldItemSlot();
                     item.setAmount(item.getAmount()-1);
                     player.getInventory().setItem(slot, item);
-                    player.getInventory().addItem(items.getCrystal(nbti.getString("crystal"), chance));
+                    player.getInventory().addItem(crystal.getCrystal(nbti.getString("crystal"), chance));
                     player.updateInventory();
                 } else
                     event.setCancelled(false);

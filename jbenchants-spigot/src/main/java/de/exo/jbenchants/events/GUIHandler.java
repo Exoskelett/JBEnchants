@@ -2,30 +2,54 @@ package de.exo.jbenchants.events;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
+import de.exo.jbenchants.commands.Crystals;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import de.exo.jbenchants.handlers.JBEnchantLore;
 import de.exo.jbenchants.handlers.JBEnchantNBT;
+import de.exo.jbenchants.handlers.JBEnchantRegions;
+import de.exo.jbenchants.items.Crystal;
+import de.tr7zw.nbtapi.NBT;
+import de.tr7zw.nbtapi.NBTBlock;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class GUIHandler implements Listener {
 
-    API api = Main.instance.api;
-    JBEnchantItems items = Main.instance.items;
-    JBEnchantNBT nbt = Main.instance.nbt;
+    private static GUIHandler INSTANCE;
+    private GUIHandler() {
+    }
+    public static GUIHandler getInstance() {
+        if (INSTANCE == null) INSTANCE = new GUIHandler();
+        return INSTANCE;
+    }
+
+    API api = Main.getAPI();
+    JBEnchantItems items = JBEnchantItems.getInstance();
+    JBEnchantLore lore = JBEnchantLore.getInstance();
+    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
+    JBEnchantRegions regions = JBEnchantRegions.getInstance();
+    Crystal crystal = Crystal.getInstance();
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -51,7 +75,75 @@ public class GUIHandler implements Listener {
                         player.openInventory(getEnchantsInventory());
                     }
                     break;
+                case "§8Decrypting...":
+                    event.setCancelled(true);
+                    break;
+                case "§8Cleanser §7§o(Click to remove)":
+                    event.setCancelled(true);
+                    if (event.getClickedInventory() == player.getInventory()) return;
+                    ItemStack enchItem = event.getClickedInventory().getItem(17);
+                    List<String> enchants = lore.sortEnchants(nbt.getEnchants(enchItem));
+                    if (event.getSlot() < enchants.size()) {
+                        for (int i = 0; i < player.getInventory().getSize(); i++) {
+                            ItemStack count = player.getInventory().getItem(i);
+                            if (count != null && count.equals(enchItem)) {
+                                nbt.removeEnchantment(enchItem, enchants.get(event.getSlot()).substring(2));
+                                lore.updateLore(enchItem);
+                                nbt.setUsedItemChance(player, "cleanser", -1);
+                                player.getInventory().setItem(i, enchItem);
+                                player.getOpenInventory().close();
+                                return;
+                            }
+                        }
+                        player.getOpenInventory().close();
+                        player.sendMessage("§cSomething went wrong, please report this incident to staff!");
+                    }
+                case "§8Crystals":
+                    event.setCancelled(true);
+                    if (event.getClickedInventory() == player.getInventory() || event.getCurrentItem().getType() != Material.NETHER_STAR) return;
+                    String rarity = event.getCurrentItem().getItemMeta().getDisplayName().split(" ")[0].substring(2).toLowerCase();
+                    player = (Player) event.getWhoClicked();
+                    if (nbt.getPlayerCrystals(player, rarity) > 0) {
+                        if (player.getInventory().firstEmpty() != -1) {
+                            nbt.addPlayerCrystals(player, rarity, -1);
+                            player.getInventory().addItem(crystal.getCrystal(rarity));
+                            player.openInventory(new Crystals().getCrystalsInventory(player));
+                        } else
+                            player.sendMessage("§cYou don't have enough space in your inventory.");
+                    }
             }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        Player player = (Player) event.getPlayer();
+        switch (event.getView().getOriginalTitle()) {
+            case "§8Cleanser §7§o(Click to remove)":
+                if (nbt.getUsedItemChance(player, "cleanser") != "-1") {
+                    player.getInventory().addItem(items.getCleanser(Integer.parseInt(nbt.getUsedItemChance(player, "cleanser"))));
+                    nbt.setUsedItemChance(player, "cleanser", -1);
+                }
+                break;
+            case "§8Treasure Hunter":
+                InventoryHolder holder = event.getInventory().getHolder();
+                if (holder instanceof Chest && regions.checkBlock(((Chest) holder).getBlock(), "mine")) {
+                    ((Chest) holder).getBlock().setType(Material.AIR);
+                }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        Player player = (Player) event.getPlayer();
+        InventoryHolder holder = event.getInventory().getHolder();
+        if (holder instanceof Chest && regions.checkBlock(((Chest) holder).getBlock(), "mine") && !nbt.checkTreasureHunter(((Chest) holder).getBlock(), player)) {
+            event.setCancelled(true);
+        } else if (holder instanceof Chest && regions.checkBlock(((Chest) holder).getBlock(), "mine")) {
+            Inventory chestInventory = event.getInventory();
+            player.getWorld().getBlockAt(event.getInventory().getLocation()).setType(Material.AIR);
+            event.setCancelled(true);
+            player.openInventory(chestInventory);
         }
     }
 
@@ -98,7 +190,7 @@ public class GUIHandler implements Listener {
 
         ItemStack spacer = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta spacerMeta = spacer.getItemMeta();
-        spacerMeta.setDisplayName("");
+        spacerMeta.setDisplayName(" ");
         spacer.setItemMeta(spacerMeta);
         for (int i = 0; i < inv.getSize(); i++) {
             if (inv.getItem(i) == null) {
@@ -145,7 +237,7 @@ public class GUIHandler implements Listener {
                     inv.setItem(edgeSlots[i], epic);
                     break;
                 case "Legendary":
-                    inv.setItem(edgeSlots[i], category);
+                    inv.setItem(edgeSlots[i], legendary);
                     break;
                 case "Tool":
                     ItemMeta categoryMeta = category.getItemMeta();
@@ -171,64 +263,23 @@ public class GUIHandler implements Listener {
         for (int i = 0; i < api.getEnchantments(type.toLowerCase()).size(); i++) {
             inv.addItem(items.getEnchantInformation(api.getEnchantments(type.toLowerCase()).get(i)));
         }
-
         return inv;
     }
 
-    private List<String> getPossibleEnchants(Player player, ItemStack item, String rarity) {
-        int level = Integer.parseInt(PlaceholderAPI.setPlaceholders(player, "level_level"));
-        int maxEnchants;
-        List<String> possibleEnchants = api.getEnchantments(rarity);
-        List<String> typeSpecificEnchants = api.getEnchantments(nbt.getCategory(item));
-        possibleEnchants.retainAll(typeSpecificEnchants);
-        List<String> itemEnchants = nbt.getEnchants(item);
-        if (level >= 40) {
-            maxEnchants = 8;
-        } else if (level >= 35) {
-            maxEnchants = 7;
-        } else if (level >= 25) {
-            maxEnchants = 6;
-        } else if (level >= 15) {
-            maxEnchants = 5;
-        } else if (level >= 10) {
-            maxEnchants = 4;
-        } else if (level >= 5) {
-            maxEnchants = 3;
-        } else {
-            maxEnchants = 2;
+    public Inventory getCleanserInventory(ItemStack item) {
+        Inventory inventory = Bukkit.createInventory(null, 18, "§8Cleanser §7§o(Click to remove)");
+        List<String> enchants = lore.sortEnchants(nbt.getEnchants(item));
+        for (int i = 0; i < enchants.size() && i < 17; i++) {
+            inventory.setItem(i, items.getCleanserEnchantInformation(item, enchants.get(i).substring(2)));
         }
-        if (itemEnchants.size() >= maxEnchants) {  // max enchantment amount - only upgrades
-            for (String enchants : nbt.getEnchants(item)) {
-                if (nbt.getEnchantmentLevel(item, enchants) == api.getLevelCap(enchants)) {
-                    itemEnchants.remove(enchants);
-                }
-            }
-            if (!itemEnchants.isEmpty()) {
-                return itemEnchants;
-            } else
-                return null;
-        } else {  // new enchants can be added (- maxed enchants)
-            for (String enchants : nbt.getEnchants(item)) {
-                if (nbt.getEnchantmentLevel(item, enchants) == api.getLevelCap(enchants)) {
-                    possibleEnchants.remove(enchants);
-                }
-            }
-            return possibleEnchants;
+        inventory.setItem(17, item);
+        ItemStack spacer = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta spacerMeta = spacer.getItemMeta();
+        spacerMeta.setDisplayName(" ");
+        spacer.setItemMeta(spacerMeta);
+        for (int k = 9; k < inventory.getSize(); k++) {
+            if (inventory.getItem(k) == null) inventory.setItem(k, spacer);
         }
-    }
-
-    public void unlockCrystal(Player player, ItemStack item, List<String> enchants) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§7Decrypting");
-        ItemStack decryptItem = new ItemStack(Material.WHITE_DYE);
-        ItemMeta decryptItemMeta = decryptItem.getItemMeta();
-        decryptItemMeta.setDisplayName("§8Decrypting...");
-        decryptItem.setItemMeta(decryptItemMeta);
-        BukkitScheduler scheduler = Main.instance.getServer().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(Main.instance, new Runnable() {
-            @Override
-            public void run() {
-                // Do something
-            }
-        }, 0L, 5L);
+        return inventory;
     }
 }
