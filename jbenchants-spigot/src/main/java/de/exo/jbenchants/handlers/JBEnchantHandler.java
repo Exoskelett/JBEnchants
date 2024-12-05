@@ -1,30 +1,23 @@
 package de.exo.jbenchants.handlers;
 
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.tr7zw.nbtapi.NBTItem;
-import net.milkbowl.vault.economy.Economy;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
-import org.bukkit.damage.DamageSource;
-import org.bukkit.damage.DamageType;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.text.DecimalFormat;
@@ -33,10 +26,13 @@ import java.util.*;
 public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
 
     private static JBEnchantHandler INSTANCE;
+
     private JBEnchantHandler() {
     }
+
     public static JBEnchantHandler getInstance() {
-        if (INSTANCE == null) INSTANCE = new JBEnchantHandler();
+        if (INSTANCE == null)
+            INSTANCE = new JBEnchantHandler();
         return INSTANCE;
     }
 
@@ -45,12 +41,14 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
     JBEnchantLore lore = JBEnchantLore.getInstance();
     JBEnchantRegions regions = JBEnchantRegions.getInstance();
 
-    public void proccToolEnchant(Player player, ItemStack tool, List<String> list, Block block) throws InterruptedException {
+    public void proccToolEnchant(Player player, ItemStack tool, List<String> list, Block block)
+            throws InterruptedException {
         List<String> notify = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             if (api.check(list.get(i), "active")) {
                 if (api.check(list.get(i), "proccable")) {
-                    if (api.check(list.get(i), "notify")) notify.add(list.get(i));
+                    if (api.check(list.get(i), "notify"))
+                        notify.add(list.get(i));
                     activateToolEnchant(player, tool, list.get(i), block);
                 }
             }
@@ -64,7 +62,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
         for (int i = 0; i < list.size(); i++) {
             if (api.check(list.get(i), "active")) {
                 if (api.check(list.get(i), "proccable")) {
-                    if (api.check(list.get(i), "notify")) notify.add(list.get(i));
+                    if (api.check(list.get(i), "notify"))
+                        notify.add(list.get(i));
                     activateArmorEnchant(player, target, armor, list.get(i));
                 }
             }
@@ -82,11 +81,15 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 s.append(list.get(k));
             }
         }
-        if (s != null) player.sendActionBar(s + " §7procced.");
+        if (s != null)
+            player.sendActionBar(Component.text(s + " procced.", NamedTextColor.GRAY));
     }
 
     private int taskId, index;
-    public void activateToolEnchant(Player player, ItemStack tool, String name, Block block) throws InterruptedException {
+
+    @SuppressWarnings("incomplete-switch")
+    public void activateToolEnchant(Player player, ItemStack tool, String name, Block block)
+            throws InterruptedException {
         switch (name) {
             // common enchants
             case "alchemy":
@@ -113,8 +116,11 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 for (int i = -1; i < 2; i++) {
                     for (int j = -1; j < 2; j++) {
                         for (int k = -1; k < 2; k++) {
-                            Block frozenBlock = player.getWorld().getBlockAt(block.getLocation().getBlockX() + j, block.getLocation().getBlockY() + i, block.getLocation().getBlockZ() + k);
-                            if (!frozenBlock.getType().equals(Material.AIR) && !frozenBlock.getType().equals(Material.PACKED_ICE) && regions.checkBlock(frozenBlock, "mine")) {
+                            Block frozenBlock = player.getWorld().getBlockAt(block.getLocation().getBlockX() + j,
+                                    block.getLocation().getBlockY() + i, block.getLocation().getBlockZ() + k);
+                            if (!frozenBlock.getType().equals(Material.AIR)
+                                    && !frozenBlock.getType().equals(Material.PACKED_ICE)
+                                    && regions.checkBlock(frozenBlock, "mine")) {
                                 for (ItemStack drop : frozenBlock.getDrops(tool)) {
                                     player.getWorld().dropItemNaturally(frozenBlock.getLocation(), drop);
                                 }
@@ -136,9 +142,10 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 Chest chest = (Chest) block.getState();
                 Inventory chestInv = chest.getInventory();
                 nbt.checkTreasureHunter(block, player);
-                String[] loot = {"DIAMOND", "EMERALD", "GOLD_INGOT", "IRON_INGOT", "COAL"};
+                String[] loot = { "DIAMOND", "EMERALD", "GOLD_INGOT", "IRON_INGOT", "COAL" };
                 for (int i = 0; i < new Random().nextInt(10) + 1; i++) {
-                    chestInv.setItem(new Random().nextInt(27), new ItemStack(Material.valueOf(loot[new Random().nextInt(4)])));
+                    chestInv.setItem(new Random().nextInt(27),
+                            new ItemStack(Material.valueOf(loot[new Random().nextInt(4)])));
                 }
                 Bukkit.getScheduler().runTaskLater(Main.instance, new Runnable() {
                     @Override
@@ -166,7 +173,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         }
                         b1.setType(Material.AIR);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
-                                b1.getLocation().getX() + 0.5, b1.getLocation().getY() + 0.5, b1.getLocation().getZ() + 0.5,
+                                b1.getLocation().getX() + 0.5, b1.getLocation().getY() + 0.5,
+                                b1.getLocation().getZ() + 0.5,
                                 20, 0, 0, 0, 0, new Particle.DustOptions(Color.fromRGB(64, 64, 64), 2), true);
                     }
                     if (regions.checkBlock(b2, "mine")) {
@@ -176,7 +184,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         }
                         b2.setType(Material.AIR);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
-                                b2.getLocation().getX() + 0.5, b2.getLocation().getY() + 0.5, b2.getLocation().getZ() + 0.5,
+                                b2.getLocation().getX() + 0.5, b2.getLocation().getY() + 0.5,
+                                b2.getLocation().getZ() + 0.5,
                                 20, 0, 0, 0, 0, new Particle.DustOptions(Color.fromRGB(64, 64, 64), 2), true);
                     }
                     if (regions.checkBlock(b3, "mine")) {
@@ -186,7 +195,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         }
                         b3.setType(Material.AIR);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
-                                b3.getLocation().getX() + 0.5, b3.getLocation().getY() + 0.5, b3.getLocation().getZ() + 0.5,
+                                b3.getLocation().getX() + 0.5, b3.getLocation().getY() + 0.5,
+                                b3.getLocation().getZ() + 0.5,
                                 20, 0, 0, 0, 0, new Particle.DustOptions(Color.fromRGB(64, 64, 64), 2), true);
                     }
                     if (regions.checkBlock(b4, "mine")) {
@@ -196,7 +206,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         }
                         b4.setType(Material.AIR);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
-                                b4.getLocation().getX() + 0.5, b4.getLocation().getY() + 0.5, b4.getLocation().getZ() + 0.5,
+                                b4.getLocation().getX() + 0.5, b4.getLocation().getY() + 0.5,
+                                b4.getLocation().getZ() + 0.5,
                                 20, 0, 0, 0, 0, new Particle.DustOptions(Color.fromRGB(64, 64, 64), 2), true);
                     }
                     if (regions.checkBlock(b5, "mine")) {
@@ -206,7 +217,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         }
                         b5.setType(Material.AIR);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
-                                b5.getLocation().getX() + 0.5, b5.getLocation().getY() + 0.5, b5.getLocation().getZ() + 0.5,
+                                b5.getLocation().getX() + 0.5, b5.getLocation().getY() + 0.5,
+                                b5.getLocation().getZ() + 0.5,
                                 20, 0, 0, 0, 0, new Particle.DustOptions(Color.fromRGB(64, 64, 64), 2), true);
                     }
                 }
@@ -225,7 +237,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
             case "ore_extractor":
                 double radius = (double) (nbt.getEnchantmentLevel(tool, name) + 1) / 2;
                 List<Block> extractedBlocks = regions.getBlocksInRadius(block, "mine", radius, true);
-                for (int i = 0; i < extractedBlocks.size()-1; i++) {
+                for (int i = 0; i < extractedBlocks.size() - 1; i++) {
                     for (ItemStack drop : extractedBlocks.get(i).getDrops(tool)) {
                         player.getWorld().dropItemNaturally(block.getLocation(), drop);
                     }
@@ -237,14 +249,16 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 }
                 break;
             case "spare_change":
-                double win = (new Random().nextDouble(74.85)+0.15)*nbt.getEnchantmentLevel(tool, name);
+                double win = (new Random().nextDouble(74.85) + 0.15) * nbt.getEnchantmentLevel(tool, name);
 
-                player.sendMessage("§7You found §a$" + DecimalFormat.getCurrencyInstance().format(win).split(" ")[0] + " §7in that block!");
+                player.sendMessage("§7You found §a$" + DecimalFormat.getCurrencyInstance().format(win).split(" ")[0]
+                        + " §7in that block!");
                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 0.5F);
                 break;
             // epic enchants
             case "haste":
-                player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, nbt.getEnchantmentLevel(tool, name)*40, 0));
+                player.addPotionEffect(
+                        new PotionEffect(PotionEffectType.FAST_DIGGING, nbt.getEnchantmentLevel(tool, name) * 40, 0));
                 break;
             case "make_it_rain":
                 new BukkitRunnable() {
@@ -259,7 +273,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         // Loop 4*level amount of items
                         for (int i = 0; i < 4 * nbt.getEnchantmentLevel(tool, name); i++) {
                             double yaw = i * (90.0 / nbt.getEnchantmentLevel(tool, name));
-                            org.bukkit.util.Vector vector = new org.bukkit.util.Vector(1, 1, 1).normalize().multiply(new Vector(1, 1, 1));
+                            org.bukkit.util.Vector vector = new org.bukkit.util.Vector(1, 1, 1).normalize()
+                                    .multiply(new Vector(1, 1, 1));
                             player.sendMessage("2");
                             vector.setY(1);
                             vector.setX(Math.cos(Math.toRadians(yaw)));
@@ -298,7 +313,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                                     Location itemLoc = item.getLocation();
                                     player.getWorld().createExplosion(itemLoc, 0, false, false);
                                     player.sendMessage("fake explosion");
-                                    Vector pushVector = itemLoc.toVector().subtract(finalLocation.toVector()).normalize().multiply(0.6);
+                                    Vector pushVector = itemLoc.toVector().subtract(finalLocation.toVector())
+                                            .normalize().multiply(0.6);
                                     item.setVelocity(pushVector);
                                     player.sendMessage("push vector");
                                 }
@@ -319,30 +335,30 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 }.runTaskLater(Main.instance, 1L);
                 break;
             case "repair":
-                nbt.repairTool(tool, nbt.getEnchantmentLevel(tool, name)*3);
+                nbt.repairTool(tool, nbt.getEnchantmentLevel(tool, name) * 3);
                 break;
             case "slots":
-                String[] blocks = {"GOLD_BLOCK", "GOLD_BLOCK", "GOLD_BLOCK", "GOLD_BLOCK",
+                String[] blocks = { "GOLD_BLOCK", "GOLD_BLOCK", "GOLD_BLOCK", "GOLD_BLOCK",
                         "COAL_BLOCK", "COAL_BLOCK", "COAL_BLOCK", "COAL_BLOCK",
                         "IRON_BLOCK", "IRON_BLOCK", "IRON_BLOCK", "IRON_BLOCK",
                         "REDSTONE_BLOCK", "REDSTONE_BLOCK", "REDSTONE_BLOCK", "REDSTONE_BLOCK",
                         "LAPIS_BLOCK", "LAPIS_BLOCK", "LAPIS_BLOCK", "LAPIS_BLOCK",
-                        "EMERALD_BLOCK", "DIAMOND_BLOCK"};
+                        "EMERALD_BLOCK", "DIAMOND_BLOCK" };
                 this.index = 10;
-                    taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.instance, new Runnable() {
-                        @Override
-                        public void run() {
-                            if (index == 0) {
-                                nbt.lockBlock(block, false);
-                                stopCountdown();
-                            } else {
-                                nbt.lockBlock(block, true);
-                                player.playSound(block.getLocation(), Sound.BLOCK_DISPENSER_DISPENSE, 1, 1);
-                                block.setType(Material.valueOf(blocks[new Random().nextInt(blocks.length)]));
-                                index--;
-                            }
+                taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.instance, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (index == 0) {
+                            nbt.lockBlock(block, false);
+                            stopCountdown();
+                        } else {
+                            nbt.lockBlock(block, true);
+                            player.playSound(block.getLocation(), Sound.BLOCK_DISPENSER_DISPENSE, 1, 1);
+                            block.setType(Material.valueOf(blocks[new Random().nextInt(blocks.length)]));
+                            index--;
                         }
-                    }, 0L, 4L);
+                    }
+                }, 0L, 4L);
                 break;
             case "smelting":
                 player.getWorld().getBlockAt(block.getLocation()).setType(Material.AIR);
@@ -361,17 +377,18 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 break;
             case "stop_that":
                 Villager v = (Villager) player.getWorld().spawn(block.getLocation(), Villager.class);
-                v.setCustomName("§d§lMagoo");
+                v.customName(Component.text("§d§lMagoo"));
                 player.sendMessage("§c§lHey, Stop That!");
                 block.getWorld().spawnParticle(Particle.REDSTONE,
-                        block.getLocation().getX() + 0.3, block.getLocation().getY() + 0.7, block.getLocation().getZ() + 0.3,
+                        block.getLocation().getX() + 0.3, block.getLocation().getY() + 0.7,
+                        block.getLocation().getZ() + 0.3,
                         100, 0, 0, 0, 0, new Particle.DustOptions(Color.fromRGB(64, 64, 64), 2), true);
                 Bukkit.getScheduler().runTaskLater(Main.instance, new Runnable() {
                     @Override
                     public void run() {
                         if (!v.isDead()) {
                             player.playSound(v.getLocation(), Sound.ENTITY_VILLAGER_DEATH, 0.1F, 1);
-                            v.teleport(v.getLocation().add(0,-300,0));
+                            v.teleport(v.getLocation().add(0, -300, 0));
                         }
                     }
                 }, 200);
@@ -379,7 +396,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
             // legendary enchants
             case "explosive":
                 radius = (double) (nbt.getEnchantmentLevel(tool, name) + 1) / 2;
-                if (radius > 5) radius = 5;
+                if (radius > 5)
+                    radius = 5;
                 if (radius < 3) {
                     player.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, block.getLocation(), 1);
                     player.playSound(block.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.1F, 1);
@@ -401,17 +419,20 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
             case "super_breaker":
                 int duration = nbt.getEnchantmentLevel(tool, name) * 20;
                 player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, duration, 99));
-                player.sendMessage(api.getColor(api.getRarity(name)) + api.getDisplayName(name) + "§a has been activated!");
+                player.sendMessage(
+                        api.getColor(api.getRarity(name)) + api.getDisplayName(name) + "§a has been activated!");
                 Bukkit.getScheduler().runTaskLater(Main.instance, new Runnable() {
                     @Override
                     public void run() {
-                        player.sendMessage(api.getColor(api.getRarity(name)) + api.getDisplayName(name) + "§c has been deactivated.");
+                        player.sendMessage(api.getColor(api.getRarity(name)) + api.getDisplayName(name)
+                                + "§c has been deactivated.");
                     }
                 }, duration);
                 break;
             case "vein_miner":
                 radius = nbt.getEnchantmentLevel(tool, name);
-                if (radius > 10) radius = 10;
+                if (radius > 10)
+                    radius = 10;
                 player.playSound(block.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 0.1F, 1);
                 List<Block> veinMinedBlocks = regions.getBlocksInRadius(block, "mine", radius, true);
                 for (Block checkedBlock : veinMinedBlocks) {
@@ -421,7 +442,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                     }
                     checkedBlock.setType(Material.AIR);
                     block.getWorld().spawnParticle(Particle.REDSTONE,
-                            checkedBlock.getLocation().getX() + 0.5, checkedBlock.getLocation().getY() + 0.5, checkedBlock.getLocation().getZ() + 0.5,
+                            checkedBlock.getLocation().getX() + 0.5, checkedBlock.getLocation().getY() + 0.5,
+                            checkedBlock.getLocation().getZ() + 0.5,
                             3, 0, 0, 0, 0, new Particle.DustOptions(Color.fromRGB(255, 0, 255), 2), true);
                 }
                 break;
@@ -461,15 +483,20 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
         if (event.getEntity() instanceof Villager && event.getEntity().getKiller() != null) {
             double chance = Math.random();
             if (chance <= 0.05) {
-                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), new ItemStack(Material.DIAMOND));
+                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(),
+                        new ItemStack(Material.DIAMOND));
             } else if (chance <= 0.1) {
-                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), new ItemStack(Material.EMERALD));
+                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(),
+                        new ItemStack(Material.EMERALD));
             } else if (chance <= 0.45) {
-                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), new ItemStack(Material.IRON_INGOT));
+                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(),
+                        new ItemStack(Material.IRON_INGOT));
             } else if (chance <= 0.8) {
-                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), new ItemStack(Material.GOLD_INGOT));
+                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(),
+                        new ItemStack(Material.GOLD_INGOT));
             } else {
-                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), new ItemStack(Material.COAL));
+                event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(),
+                        new ItemStack(Material.COAL));
             }
         }
     }
@@ -483,7 +510,8 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 @Override
                 public void run() {
                     if (nbt.checkLockedBlock(block)) {
-                        if (!block.getType().equals(Material.TRAPPED_CHEST)) event.getPlayer().sendMessage("§aThe block you tried to break can be broken now.");
+                        if (!block.getType().equals(Material.TRAPPED_CHEST))
+                            event.getPlayer().sendMessage("§aThe block you tried to break can be broken now.");
                         nbt.lockBlock(block, false);
                     }
                 }

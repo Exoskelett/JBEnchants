@@ -7,7 +7,6 @@ import de.exo.jbenchants.handlers.JBEnchantNBT;
 import de.tr7zw.nbtapi.NBTBlock;
 import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -35,7 +34,7 @@ public class jbdebug implements CommandExecutor {
                     NBTItem nbti = new NBTItem(item);
                     player.sendMessage("Debug:\n"
                             +"JBEnchants: ("+nbti.getInteger("jbenchants")+") "+nbt.getEnchants(item).toString()
-                            +"\nLore: "+item.getLore().toString());
+                            +"\nLore: "+item.lore().toString());
                     break;
                 case 1:
                     switch (args[0]) {

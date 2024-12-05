@@ -1,6 +1,5 @@
 package de.exo.jbenchants;
 
-import java.io.Console;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,12 +8,14 @@ public class MySQL implements API {
 
     private Connection connection;
     private final String host;
+    private final int port;
     private final String database;
     private final String username;
     private final String password;
 
-    public MySQL(String host, String database, String username, String password) {
+    public MySQL(String host, int port, String database, String username, String password) {
         this.host = host;
+        this.port = port;
         this.database = database;
         this.username = username;
         this.password = password;
@@ -23,7 +24,7 @@ public class MySQL implements API {
     public Connection getConnection() throws SQLException {
         if (connection == null || !connection.isValid(1)) {
             connection = DriverManager.getConnection("jdbc:mysql://" + host
-                    + "/" + database + "?useSSL=false", username, password);
+                    + ":" + port + "/" + database + "?useSSL=false", username, password);
         }
         return connection;
     }

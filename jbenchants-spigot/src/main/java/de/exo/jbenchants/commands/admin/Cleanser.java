@@ -1,8 +1,6 @@
 package de.exo.jbenchants.commands.admin;
 
-import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantItems;
-import de.exo.jbenchants.handlers.ToolReader;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -31,17 +29,17 @@ public class Cleanser implements CommandExecutor, TabCompleter {
                 switch (args.length) {
                     case 1:  // player
                         cleanser = items.getCleanser();
-                        sender.sendMessage(target.getDisplayName() + " §7received §f1x " + cleanser.getItemMeta().getDisplayName());
+                        sender.sendMessage(target.displayName() + " §7received §f1x " + cleanser.getItemMeta().displayName());
                         break;
                     case 2:  // player + amount
                         cleanser = items.getCleanser();
                         cleanser.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + cleanser.getItemMeta().getDisplayName());
+                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + cleanser.getItemMeta().displayName());
                         break;
                     case 3:  // player + amount + chance
                         cleanser = items.getCleanser(Integer.parseInt(args[2]));
                         cleanser.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + cleanser.getItemMeta().getDisplayName());
+                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + cleanser.getItemMeta().displayName());
                         break;
                     default:
                         sender.sendMessage(cleanserSyntax);

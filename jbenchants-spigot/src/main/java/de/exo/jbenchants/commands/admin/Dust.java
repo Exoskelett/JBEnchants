@@ -1,6 +1,5 @@
 package de.exo.jbenchants.commands.admin;
 
-import de.exo.jbenchants.Main;
 import de.exo.jbenchants.handlers.JBEnchantItems;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -30,22 +29,22 @@ public class Dust implements CommandExecutor, TabCompleter {
                 switch (args.length) {
                     case 1:  // player
                         dust = items.getDust("random");
-                        sender.sendMessage(target.getDisplayName() + " §7received §f1x " + dust.getItemMeta().getDisplayName());
+                        sender.sendMessage(target.displayName() + " §7received §f1x " + dust.getItemMeta().displayName());
                         break;
                     case 2:  // player + amount
                         dust = items.getDust("random");
                         dust.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().getDisplayName());
+                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().displayName());
                         break;
                     case 3:  // player + amount + rarity
                         dust = items.getDust(args[2]);
                         dust.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().getDisplayName());
+                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().displayName());
                         break;
                     case 4:  // player + amount + rarity + chance
                         dust = items.getDust(args[2], Integer.parseInt(args[3]));
                         dust.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().getDisplayName());
+                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + dust.getItemMeta().displayName());
                         break;
                     default:
                         sender.sendMessage(dustSyntax);
