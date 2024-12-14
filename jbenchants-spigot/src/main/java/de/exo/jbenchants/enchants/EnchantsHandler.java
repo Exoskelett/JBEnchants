@@ -1,7 +1,10 @@
-package de.exo.jbenchants.handlers;
+package de.exo.jbenchants.enchants;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
+import de.exo.jbenchants.items.crystal.LevelEnchants;
+import de.tr7zw.nbtapi.NBTItem;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -19,39 +22,37 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.*;
 
-public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
+public class EnchantsHandler implements Listener {
 
-    private static JBEnchantHandler INSTANCE;
+    private static EnchantsHandler INSTANCE;
 
-    private JBEnchantHandler() {
+    private EnchantsHandler() {
     }
 
-    public static JBEnchantHandler getInstance() {
+    public static EnchantsHandler getInstance() {
         if (INSTANCE == null)
-            INSTANCE = new JBEnchantHandler();
+            INSTANCE = new EnchantsHandler();
         return INSTANCE;
     }
 
     API api = Main.getAPI();
-    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
-    JBEnchantLore lore = JBEnchantLore.getInstance();
-    JBEnchantRegions regions = JBEnchantRegions.getInstance();
+    EnchantsNBT nbt = EnchantsNBT.getInstance();
+    EnchantsLore lore = EnchantsLore.getInstance();
+    EnchantsRegions regions = EnchantsRegions.getInstance();
 
     public void proccToolEnchant(Player player, ItemStack tool, List<String> list, Block block)
             throws InterruptedException {
         List<String> notify = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            if (api.check(list.get(i), "active")) {
-                if (api.check(list.get(i), "proccable")) {
-                    if (api.check(list.get(i), "notify"))
-                        notify.add(list.get(i));
-                    activateToolEnchant(player, tool, list.get(i), block);
-                }
-            }
+            boolean[] enchantAttributes = api.check(list.get(i), "active", "proccable", "notify");
+            if (!enchantAttributes[0] || !enchantAttributes[1]) continue;
+            if (enchantAttributes[2]) notify.add(list.get(i));
+            activateToolEnchant(player, tool, list.get(i), block);
         }
         notify = lore.sortEnchants(notify);
         notify(player, notify);
@@ -60,13 +61,10 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
     public void proccArmorEnchant(Player player, Player target, ItemStack armor, List<String> list) {
         List<String> notify = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            if (api.check(list.get(i), "active")) {
-                if (api.check(list.get(i), "proccable")) {
-                    if (api.check(list.get(i), "notify"))
-                        notify.add(list.get(i));
-                    activateArmorEnchant(player, target, armor, list.get(i));
-                }
-            }
+            boolean[] enchantAttributes = api.check(list.get(i), "active", "proccable", "notify");
+            if (!enchantAttributes[0] || !enchantAttributes[1]) continue;
+            if (enchantAttributes[2]) notify.add(list.get(i));
+            activateArmorEnchant(player, target, armor, list.get(i));
         }
         notify = lore.sortEnchants(notify);
         notify(player, notify);
@@ -82,7 +80,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
             }
         }
         if (s != null)
-            player.sendActionBar(Component.text(s + " procced.", NamedTextColor.GRAY));
+            ((Audience) player).sendActionBar(Component.text(s + " procced.", NamedTextColor.GRAY));
     }
 
     private int taskId, index;
@@ -95,17 +93,17 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
             case "alchemy":
                 if (block.getType().toString().contains("ORE")) {
                     switch (block.getType()) {
-                        case COAL_ORE -> block.setType(Material.IRON_ORE);
-                        case IRON_ORE -> block.setType(Material.GOLD_ORE);
-                        case GOLD_ORE -> block.setType(Material.DIAMOND_ORE);
-                        case DIAMOND_ORE -> block.setType(Material.EMERALD_ORE);
+                        case COAL_ORE -> block.setType(Material.IRON_ORE, false);
+                        case IRON_ORE -> block.setType(Material.GOLD_ORE, false);
+                        case GOLD_ORE -> block.setType(Material.DIAMOND_ORE, false);
+                        case DIAMOND_ORE -> block.setType(Material.EMERALD_ORE, false);
                     }
                 } else if (block.getType().toString().contains("BLOCK")) {
                     switch (block.getType()) {
-                        case COAL_BLOCK -> block.setType(Material.IRON_BLOCK);
-                        case IRON_BLOCK -> block.setType(Material.GOLD_BLOCK);
-                        case GOLD_BLOCK -> block.setType(Material.DIAMOND_BLOCK);
-                        case DIAMOND_BLOCK -> block.setType(Material.EMERALD_BLOCK);
+                        case COAL_BLOCK -> block.setType(Material.IRON_BLOCK, false);
+                        case IRON_BLOCK -> block.setType(Material.GOLD_BLOCK, false);
+                        case GOLD_BLOCK -> block.setType(Material.DIAMOND_BLOCK, false);
+                        case DIAMOND_BLOCK -> block.setType(Material.EMERALD_BLOCK, false);
                     }
                 }
                 for (ItemStack drop : block.getDrops(tool)) {
@@ -124,7 +122,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                                 for (ItemStack drop : frozenBlock.getDrops(tool)) {
                                     player.getWorld().dropItemNaturally(frozenBlock.getLocation(), drop);
                                 }
-                                frozenBlock.setType(Material.PACKED_ICE);
+                                frozenBlock.setType(Material.PACKED_ICE, false);
                             }
                         }
                     }
@@ -138,7 +136,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 break;
             case "treasure_hunter":
                 // InventoryCloseEvent in class GUIHandler
-                block.setType(Material.TRAPPED_CHEST);
+                block.setType(Material.TRAPPED_CHEST, false);
                 Chest chest = (Chest) block.getState();
                 Inventory chestInv = chest.getInventory();
                 nbt.checkTreasureHunter(block, player);
@@ -151,7 +149,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                     @Override
                     public void run() {
                         if (block.getType().equals(Material.TRAPPED_CHEST)) {
-                            block.setType(Material.AIR);
+                            block.setType(Material.AIR, false);
                             nbt.lockBlock(block, false);
                         }
                     }
@@ -171,7 +169,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                             if (!b1.getType().equals(Material.PACKED_ICE))
                                 player.getWorld().dropItemNaturally(b1.getLocation(), drop);
                         }
-                        b1.setType(Material.AIR);
+                        b1.setType(Material.AIR, false);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
                                 b1.getLocation().getX() + 0.5, b1.getLocation().getY() + 0.5,
                                 b1.getLocation().getZ() + 0.5,
@@ -182,7 +180,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                             if (!b2.getType().equals(Material.PACKED_ICE))
                                 player.getWorld().dropItemNaturally(b2.getLocation(), drop);
                         }
-                        b2.setType(Material.AIR);
+                        b2.setType(Material.AIR, false);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
                                 b2.getLocation().getX() + 0.5, b2.getLocation().getY() + 0.5,
                                 b2.getLocation().getZ() + 0.5,
@@ -193,7 +191,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                             if (!b3.getType().equals(Material.PACKED_ICE))
                                 player.getWorld().dropItemNaturally(b3.getLocation(), drop);
                         }
-                        b3.setType(Material.AIR);
+                        b3.setType(Material.AIR, false);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
                                 b3.getLocation().getX() + 0.5, b3.getLocation().getY() + 0.5,
                                 b3.getLocation().getZ() + 0.5,
@@ -204,7 +202,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                             if (!b4.getType().equals(Material.PACKED_ICE))
                                 player.getWorld().dropItemNaturally(b4.getLocation(), drop);
                         }
-                        b4.setType(Material.AIR);
+                        b4.setType(Material.AIR, false);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
                                 b4.getLocation().getX() + 0.5, b4.getLocation().getY() + 0.5,
                                 b4.getLocation().getZ() + 0.5,
@@ -215,7 +213,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                             if (!b5.getType().equals(Material.PACKED_ICE))
                                 player.getWorld().dropItemNaturally(b5.getLocation(), drop);
                         }
-                        b5.setType(Material.AIR);
+                        b5.setType(Material.AIR, false);
                         block.getWorld().spawnParticle(Particle.REDSTONE,
                                 b5.getLocation().getX() + 0.5, b5.getLocation().getY() + 0.5,
                                 b5.getLocation().getZ() + 0.5,
@@ -267,7 +265,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         Location location = block.getLocation();
                         if (player.getWorld().getBlockAt(location.add(0, 1, 0)).getType() == Material.AIR)
                             location.add(0, 0.6, 0);
-                        location = location.toCenterLocation();
+                        location = new Location(location.getWorld(), location.getX() + 0.5, location.getY() + 0.5, location.getZ() + 0.5);
                         List<Item> itemList = new ArrayList<>();
                         player.sendMessage("1");
                         // Loop 4*level amount of items
@@ -311,7 +309,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                             public void run() {
                                 for (Item item : itemList) {
                                     Location itemLoc = item.getLocation();
-                                    player.getWorld().createExplosion(itemLoc, 0, false, false);
+                                    player.getWorld().createExplosion(itemLoc.getX(), itemLoc.getY(), itemLoc.getZ(), 0, false, false);
                                     player.sendMessage("fake explosion");
                                     Vector pushVector = itemLoc.toVector().subtract(finalLocation.toVector())
                                             .normalize().multiply(0.6);
@@ -354,20 +352,20 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         } else {
                             nbt.lockBlock(block, true);
                             player.playSound(block.getLocation(), Sound.BLOCK_DISPENSER_DISPENSE, 1, 1);
-                            block.setType(Material.valueOf(blocks[new Random().nextInt(blocks.length)]));
+                            block.setType(Material.valueOf(blocks[new Random().nextInt(blocks.length)]), false);
                             index--;
                         }
                     }
                 }, 0L, 4L);
                 break;
             case "smelting":
-                player.getWorld().getBlockAt(block.getLocation()).setType(Material.AIR);
+                player.getWorld().getBlockAt(block.getLocation()).setType(Material.AIR, false);
                 for (ItemStack drop : block.getDrops()) {
                     if (drop.getType().toString().contains("LOG")) {
                         player.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.COAL));
-                    } else if (drop.getType().equals(Material.RAW_GOLD)) {
+                    } else if (drop.getType().equals(Material.GOLD_ORE)) {
                         player.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.GOLD_INGOT));
-                    } else if (drop.getType().equals(Material.RAW_IRON)) {
+                    } else if (drop.getType().equals(Material.IRON_ORE)) {
                         player.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.IRON_INGOT));
                     } else if (drop.getType().equals(Material.COBBLESTONE)) {
                         player.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.STONE));
@@ -377,7 +375,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                 break;
             case "stop_that":
                 Villager v = (Villager) player.getWorld().spawn(block.getLocation(), Villager.class);
-                v.customName(Component.text("§d§lMagoo"));
+                v.setCustomName("§d§lMagoo");
                 player.sendMessage("§c§lHey, Stop That!");
                 block.getWorld().spawnParticle(Particle.REDSTONE,
                         block.getLocation().getX() + 0.3, block.getLocation().getY() + 0.7,
@@ -411,7 +409,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         if (!checkedBlock.getType().equals(Material.PACKED_ICE))
                             player.getWorld().dropItemNaturally(checkedBlock.getLocation(), drop);
                     }
-                    checkedBlock.setType(Material.AIR);
+                    checkedBlock.setType(Material.AIR, false);
                 }
                 break;
             case "lucky":
@@ -440,7 +438,7 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
                         if (!checkedBlock.getType().equals(Material.PACKED_ICE))
                             player.getWorld().dropItemNaturally(checkedBlock.getLocation(), drop);
                     }
-                    checkedBlock.setType(Material.AIR);
+                    checkedBlock.setType(Material.AIR, false);
                     block.getWorld().spawnParticle(Particle.REDSTONE,
                             checkedBlock.getLocation().getX() + 0.5, checkedBlock.getLocation().getY() + 0.5,
                             checkedBlock.getLocation().getZ() + 0.5,
@@ -521,5 +519,46 @@ public class JBEnchantHandler implements JBEnchantData.Handler, Listener {
 
     public void stopCountdown() {
         Bukkit.getScheduler().cancelTask(taskId);
+    }
+
+    public boolean checkEnchantUpgradability(Player player, ItemStack item, String enchant) { // true = 1 or more levels
+        NBTItem nbti = new NBTItem(item);
+        if (nbt.getEnchants(item).size() < LevelEnchants.getPlayerMaxEnchants(player).maxEnchants) {
+            if (nbti.hasTag(enchant))
+                return api.getLevelCap(enchant) > nbti.getInteger(enchant);
+            return true;
+        } else {
+            if (nbti.hasTag(enchant))
+                return api.getLevelCap(enchant) > nbti.getInteger(enchant);
+            return false;
+        }
+    }
+
+    public List<String> getPossibleEnchants(Player player, ItemStack item, String rarity) {
+        List<String> possibleEnchants = api.getEnchantments(rarity);
+        List<String> typeSpecificEnchants = api.getEnchantments(nbt.getCategory(item));
+        possibleEnchants.retainAll(typeSpecificEnchants);
+        List<String> itemEnchants = nbt.getEnchants(item);
+        itemEnchants.removeIf(enchant -> !api.getRarity(enchant).equals(rarity));
+        if (nbt.getEnchants(item).size() < LevelEnchants.getPlayerMaxEnchants(player).maxEnchants) { // all enchants - max. level
+            // enchants
+            if (!itemEnchants.isEmpty()) {
+                for (String enchant : itemEnchants)
+                    if (!checkEnchantUpgradability(player, item, enchant))
+                        possibleEnchants.remove(enchant);
+            }
+            return possibleEnchants;
+        } else { // already existing enchants - max. level enchants
+            if (!itemEnchants.isEmpty()) {
+                int initialSize = possibleEnchants.size();
+                for (String enchant : itemEnchants)
+                    if (!checkEnchantUpgradability(player, item, enchant))
+                        possibleEnchants.remove(enchant);
+                if (possibleEnchants.size() + itemEnchants.size() == initialSize)
+                    return null;
+                return possibleEnchants;
+            }
+            return null;
+        }
     }
 }

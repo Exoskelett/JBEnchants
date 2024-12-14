@@ -1,4 +1,4 @@
-package de.exo.jbenchants.handlers;
+package de.exo.jbenchants.enchants;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
@@ -22,13 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class JBEnchantNBT implements JBEnchantData.NBT {
+public class EnchantsNBT {
 
-    private static JBEnchantNBT INSTANCE;
-    private JBEnchantNBT() {
+    private static EnchantsNBT INSTANCE;
+    private EnchantsNBT() {
     }
-    public static JBEnchantNBT getInstance() {
-        if (INSTANCE == null) INSTANCE = new JBEnchantNBT();
+    public static EnchantsNBT getInstance() {
+        if (INSTANCE == null) INSTANCE = new EnchantsNBT();
         return INSTANCE;
     }
 
@@ -120,45 +120,6 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
             return null;
     }
 
-    public void setUsedItemChance(Player player, String item_used, int chance) {
-        NBTEntity entity = new NBTEntity(player);
-        if (chance >= 0) {
-            entity.getPersistentDataContainer().setInteger("used_" + item_used.toLowerCase(), chance);
-        } else
-            entity.getPersistentDataContainer().removeKey("used_" + item_used.toLowerCase());
-    }
-
-    public String getUsedItemChance(Player player, String item_used) {
-        NBTCompound entity = new NBTEntity(player).getPersistentDataContainer();
-        switch (item_used) {
-            case "cleanser":
-                if (entity.hasTag("used_cleanser")) return entity.getInteger("used_cleanser").toString();
-                break;
-            case "crystal":
-                if (entity.hasTag("used_common")) {
-                    return "common-" + entity.getInteger("used_common");
-                } else if (entity.hasTag("used_rare")) {
-                    return "rare-" + entity.getInteger("used_rare");
-                } else if (entity.hasTag("used_epic")) {
-                    return "epic-" + entity.getInteger("used_epic");
-                } else if (entity.hasTag("used_legendary")) {
-                    return "legendary-" + entity.getInteger("used_legendary");
-                }
-                break;
-        }
-        return null;
-    }
-
-    public void addPlayerCrystals(Player player, String rarity, int amount) {
-        NBTEntity entity = new NBTEntity(player);
-        entity.getPersistentDataContainer().setInteger(rarity, entity.getPersistentDataContainer().getInteger(rarity)+amount);
-    }
-
-    public int getPlayerCrystals(Player player, String rarity) {
-        NBTEntity entity = new NBTEntity(player);
-        return entity.getPersistentDataContainer().getInteger(rarity);
-    }
-
     // Handling vanilla enchantments
 
     private boolean checkVanillaEnchant(String name) {
@@ -168,7 +129,6 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
             return false;
     }
 
-    @Override
     public void setEnchantGlow(ItemStack item, boolean applyGlow) {
         ItemMeta meta = item.getItemMeta();
         if (applyGlow && !meta.hasEnchant(Enchantment.LURE)) {
@@ -181,7 +141,6 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
         item.setItemMeta(meta);
     }
 
-    @Override
     public void setVanillaEnchant(ItemStack item, String enchant, int level) {
         if (!checkVanillaEnchant(enchant)) return;
         NBTItem nbti = new NBTItem(item);
@@ -193,7 +152,6 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
         item.setItemMeta(meta);
     }
 
-    @Override
     public void removeVanillaEnchant(ItemStack item, String enchant) {
         if (!checkVanillaEnchant(enchant)) return;
         NBTItem nbti = new NBTItem(item);
@@ -209,13 +167,12 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
 
     // Update Items
 
-    @Override
     public boolean updateEnchantedItem(ItemStack item) {
         NBTItem nbti = new NBTItem(item);
         ItemMeta meta = item.getItemMeta();
         List<Component> lore = meta != null ? meta.lore() : null;
         if (!nbti.hasTag("jbenchants") && lore != null && item.getType() != Material.NETHER_STAR && item.getType() != Material.SUGAR && item.getType() != Material.GUNPOWDER && item.getType() != Material.PAPER) {
-            List<Integer> enchantLoreSlots = JBEnchantLore.getInstance().getEnchantmentLoreSlots(item);
+            List<Integer> enchantLoreSlots = EnchantsLore.getInstance().getEnchantmentLoreSlots(item);
             if (enchantLoreSlots == null) return false;
             boolean prefix = lore.get(0).toString().split(" ").length == 3;
             for (Integer enchantLoreSlot : enchantLoreSlots) {  // add enchants
@@ -231,90 +188,6 @@ public class JBEnchantNBT implements JBEnchantData.NBT {
             nbti.setString("jbenchants", "true");
             nbti.applyNBT(item);
             return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateCrystal(ItemStack item) {
-        NBTItem nbti = new NBTItem(item);
-        ItemMeta meta = item.getItemMeta();
-        List<Component> lore = meta != null ? meta.lore() : null;
-        if (!nbti.hasTag("crystal") && lore != null && item.getType().equals(Material.NETHER_STAR)) {
-            if (Objects.equals(lore.get(3).toString(), api.getItemLore("crystal")[3])) {
-                String rarity = lore.get(0).toString().split(" ")[1].substring(2).substring(0, 1).toUpperCase();
-                nbti.setString("crystal", rarity);
-                String chance = lore.get(1).toString().split(" ")[2].substring(2).replace("%", "");
-                nbti.setString("chance", chance);
-                nbti.applyNBT(item);
-                return true;
-            } else if (Objects.equals(lore.get(2).toString(), api.getItemLore("mysteryCrystal")[2])) {
-                String rarity = lore.get(0).toString().split(" ")[1].substring(2).substring(0, 1).toUpperCase();
-                nbti.setString("crystal", rarity);
-                String chance = lore.get(6).toString().split(" ")[1].substring(2).replace("%", "");
-                switch (chance.split("-").length) {
-                    case 1:
-                        nbti.setString("chance", "0-100");
-                        break;
-                    case 2:
-                        nbti.setString("chance", chance);
-                        break;
-                }
-                nbti.applyNBT(item);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateDust(ItemStack item) {
-        NBTItem nbti = new NBTItem(item);
-        ItemMeta meta = item.getItemMeta();
-        List<Component> lore = meta != null ? meta.lore() : null;
-        if (!nbti.hasTag("dust") && lore != null && lore.size() > 2) {
-            if (Objects.equals(lore.get(2).toString(), api.getItemLore("dust")[2])) {
-                String rarity = lore.get(0).toString().split(" ")[1].substring(2).substring(0, 1).toUpperCase();
-                nbti.setString("dust", rarity);
-                String chance = lore.get(1).toString().split(" ")[3].substring(2).replace("%", "");
-                nbti.setString("chance", chance);
-                nbti.applyNBT(item);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateCleanser(ItemStack item) {
-        NBTItem nbti = new NBTItem(item);
-        ItemMeta meta = item.getItemMeta();
-        List<Component> lore = meta != null ? meta.lore() : null;
-        if (!nbti.hasTag("cleanser") && lore != null && lore.size() > 2) {
-            if (Objects.equals(lore.get(2).toString(), api.getItemLore("cleanser")[2])) {
-                int chance = Integer.parseInt(lore.get(0).toString().split(" ")[2].substring(2).replace("%", ""));
-                nbti.setInteger("chance", chance);
-                nbti.applyNBT(item);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateScroll(ItemStack item) {
-        NBTItem nbti = new NBTItem(item);
-        ItemMeta meta = item.getItemMeta();
-        List<Component> lore = meta != null ? meta.lore() : null;
-        if (!nbti.hasTag("scroll") && lore != null && lore.size() > 3) {
-            if (Objects.equals(lore.get(3).toString(), api.getItemLore("scroll")[3])) {
-                String rarity = lore.get(0).toString().split(" ")[1].substring(2).substring(0, 1).toUpperCase();
-                nbti.setString("scroll", rarity);
-                String chance = lore.get(1).toString().split(" ")[2].substring(2).replace("%", "");
-                nbti.setString("chance", chance);
-                nbti.applyNBT(item);
-                return true;
-            }
         }
         return false;
     }

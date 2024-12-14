@@ -2,10 +2,10 @@ package de.exo.jbenchants.commands;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.exo.jbenchants.handlers.JBEnchantHandler;
-import de.exo.jbenchants.handlers.JBEnchantItems;
-import de.exo.jbenchants.handlers.JBEnchantLore;
-import de.exo.jbenchants.handlers.JBEnchantNBT;
+import de.exo.jbenchants.enchants.EnchantsHandler;
+import de.exo.jbenchants.enchants.EnchantsItems;
+import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsNBT;
 import org.bukkit.Material;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -18,10 +18,10 @@ import java.util.List;
 
 public class jbe implements CommandExecutor, TabCompleter {
     API api = Main.getAPI();
-    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
-    JBEnchantLore lore = JBEnchantLore.getInstance();
-    JBEnchantHandler handler = JBEnchantHandler.getInstance();
-    JBEnchantItems items = JBEnchantItems.getInstance();
+    EnchantsNBT nbt = EnchantsNBT.getInstance();
+    EnchantsLore lore = EnchantsLore.getInstance();
+    EnchantsHandler handler = EnchantsHandler.getInstance();
+    EnchantsItems items = EnchantsItems.getInstance();
 
     String registerSyntax = "/jbe register [rarity] [name]";
     String addEnchantSyntax = "/jbe enchant add <enchantment> [level]";

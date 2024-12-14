@@ -1,6 +1,6 @@
 package de.exo.jbenchants.commands.admin;
 
-import de.exo.jbenchants.handlers.JBEnchantItems;
+import de.exo.jbenchants.items.cleanser.Cleanser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,9 +14,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Cleanser implements CommandExecutor, TabCompleter {
-
-    JBEnchantItems items = JBEnchantItems.getInstance();
+public class CleanserCommand implements CommandExecutor, TabCompleter {
+    private final Cleanser cleanser = Cleanser.getInstance();
 
     String cleanserSyntax = "§c/cleanser [player] <amount> <chance>";
 
@@ -25,26 +24,26 @@ public class Cleanser implements CommandExecutor, TabCompleter {
         if (args.length > 0) {
             try {
                 Player target = Bukkit.getPlayer(args[0]);
-                ItemStack cleanser = null;
+                ItemStack item = null;
                 switch (args.length) {
                     case 1:  // player
-                        cleanser = items.getCleanser();
-                        sender.sendMessage(target.displayName() + " §7received §f1x " + cleanser.getItemMeta().displayName());
+                        item = cleanser.getCleanser();
+                        sender.sendMessage(target.getDisplayName() + " §7received §f1x " + item.getItemMeta().getDisplayName());
                         break;
                     case 2:  // player + amount
-                        cleanser = items.getCleanser();
-                        cleanser.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + cleanser.getItemMeta().displayName());
+                        item = cleanser.getCleanser();
+                        item.setAmount(Integer.parseInt(args[1]));
+                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + item.getItemMeta().getDisplayName());
                         break;
                     case 3:  // player + amount + chance
-                        cleanser = items.getCleanser(Integer.parseInt(args[2]));
-                        cleanser.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + cleanser.getItemMeta().displayName());
+                        item = cleanser.getCleanser(Integer.parseInt(args[2]));
+                        item.setAmount(Integer.parseInt(args[1]));
+                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + item.getItemMeta().getDisplayName());
                         break;
                     default:
                         sender.sendMessage(cleanserSyntax);
                 }
-                target.getInventory().addItem(cleanser);
+                target.getInventory().addItem(item);
             } catch (NullPointerException e) {
                 sender.sendMessage("§c'" + args[0] + "' is not online.");
                 e.printStackTrace();

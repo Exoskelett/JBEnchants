@@ -2,8 +2,8 @@ package de.exo.jbenchants.commands;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.exo.jbenchants.handlers.JBEnchantLore;
-import de.exo.jbenchants.handlers.JBEnchantNBT;
+import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsNBT;
 import de.tr7zw.nbtapi.NBTBlock;
 import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
@@ -19,8 +19,8 @@ import java.util.Set;
 
 public class jbdebug implements CommandExecutor {
     API api = Main.getAPI();
-    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
-    JBEnchantLore lore = JBEnchantLore.getInstance();
+    EnchantsNBT nbt = EnchantsNBT.getInstance();
+    EnchantsLore lore = EnchantsLore.getInstance();
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
@@ -34,7 +34,7 @@ public class jbdebug implements CommandExecutor {
                     NBTItem nbti = new NBTItem(item);
                     player.sendMessage("Debug:\n"
                             +"JBEnchants: ("+nbti.getInteger("jbenchants")+") "+nbt.getEnchants(item).toString()
-                            +"\nLore: "+item.lore().toString());
+                            +"\nLore: "+item.getLore().toString());
                     break;
                 case 1:
                     switch (args[0]) {

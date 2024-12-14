@@ -1,6 +1,6 @@
 package de.exo.jbenchants.commands.admin;
 
-import de.exo.jbenchants.handlers.JBEnchantItems;
+import de.exo.jbenchants.items.dust.Dust;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,42 +14,41 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RepairScroll implements CommandExecutor, TabCompleter {
+public class DustCommand implements CommandExecutor, TabCompleter {
+    private final Dust dust = Dust.getInstance();
 
-    JBEnchantItems items = JBEnchantItems.getInstance();
-
-    String scrollSyntax = "§c/repairscroll [player] [amount] <rarity> <chance>";
+    String dustSyntax = "§c/dust [player] [amount] <rarity> <chance>";
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (args.length > 0) {
             try {
                 Player target = Bukkit.getPlayer(args[0]);
-                ItemStack scroll = null;
+                ItemStack item = null;
                 switch (args.length) {
                     case 1:  // player
-                        scroll = items.getScroll("random");
-                        sender.sendMessage(target.displayName() + " §7received §f1x " + scroll.getItemMeta().displayName());
+                        item = dust.getDust("random");
+                        sender.sendMessage(target.getDisplayName() + " §7received §f1x " + item.getItemMeta().getDisplayName());
                         break;
                     case 2:  // player + amount
-                        scroll = items.getScroll("random");
-                        scroll.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + scroll.getItemMeta().displayName());
+                        item = dust.getDust("random");
+                        item.setAmount(Integer.parseInt(args[1]));
+                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + item.getItemMeta().getDisplayName());
                         break;
                     case 3:  // player + amount + rarity
-                        scroll = items.getScroll(args[2]);
-                        scroll.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + scroll.getItemMeta().displayName());
+                        item = dust.getDust(args[2]);
+                        item.setAmount(Integer.parseInt(args[1]));
+                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + item.getItemMeta().getDisplayName());
                         break;
                     case 4:  // player + amount + rarity + chance
-                        scroll = items.getScroll(args[2], Integer.parseInt(args[3]));
-                        scroll.setAmount(Integer.parseInt(args[1]));
-                        sender.sendMessage(target.displayName() + " §7received §f" + args[1] + "x " + scroll.getItemMeta().displayName());
+                        item = dust.getDust(args[2], Integer.parseInt(args[3]));
+                        item.setAmount(Integer.parseInt(args[1]));
+                        sender.sendMessage(target.getDisplayName() + " §7received §f" + args[1] + "x " + item.getItemMeta().getDisplayName());
                         break;
                     default:
-                        sender.sendMessage(scrollSyntax);
+                        sender.sendMessage(dustSyntax);
                 }
-                target.getInventory().addItem(scroll);
+                target.getInventory().addItem(item);
             } catch (NullPointerException e) {
                 sender.sendMessage("§c'" + args[0] + "' is not online.");
                 e.printStackTrace();
@@ -60,7 +59,7 @@ public class RepairScroll implements CommandExecutor, TabCompleter {
                 }
             }
         } else
-            sender.sendMessage(scrollSyntax);
+            sender.sendMessage(dustSyntax);
         return false;
     }
 

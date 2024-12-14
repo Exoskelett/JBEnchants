@@ -1,4 +1,4 @@
-package de.exo.jbenchants.handlers;
+package de.exo.jbenchants.enchants;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
@@ -13,16 +13,16 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JBEnchantRegions implements JBEnchantData.Regions {
+public class EnchantsRegions {
 
-    private static JBEnchantRegions INSTANCE;
+    private static EnchantsRegions INSTANCE;
 
-    private JBEnchantRegions() {
+    private EnchantsRegions() {
     }
 
-    public static JBEnchantRegions getInstance() {
+    public static EnchantsRegions getInstance() {
         if (INSTANCE == null)
-            INSTANCE = new JBEnchantRegions();
+            INSTANCE = new EnchantsRegions();
         return INSTANCE;
     }
 

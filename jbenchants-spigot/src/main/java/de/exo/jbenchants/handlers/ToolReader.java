@@ -2,6 +2,10 @@ package de.exo.jbenchants.handlers;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
+import de.exo.jbenchants.enchants.EnchantsHandler;
+import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsNBT;
+import de.exo.jbenchants.enchants.EnchantsRegions;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -26,10 +30,10 @@ public class ToolReader implements Listener {
     }
 
     API api = Main.getAPI();
-    JBEnchantNBT nbt = JBEnchantNBT.getInstance();
-    JBEnchantLore lore = JBEnchantLore.getInstance();
-    JBEnchantHandler handler = JBEnchantHandler.getInstance();
-    JBEnchantRegions regions = JBEnchantRegions.getInstance();
+    EnchantsNBT nbt = EnchantsNBT.getInstance();
+    EnchantsLore lore = EnchantsLore.getInstance();
+    EnchantsHandler handler = EnchantsHandler.getInstance();
+    EnchantsRegions regions = EnchantsRegions.getInstance();
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) throws InterruptedException {

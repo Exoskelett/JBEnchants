@@ -32,6 +32,8 @@ public interface API {
 
     boolean check(String name, String dbCollum);
 
+    boolean[] check(String name, String dbString1, String dbString2, String dbString3);
+
     String getColor(String name);
 
     String getPrefix(String name);
@@ -42,7 +44,7 @@ public interface API {
     String[] getItemLore(String type);
 
 
-
+    String getItemMaterial(String type);
 
     void setLobbySpawn(String world, String location);
 
