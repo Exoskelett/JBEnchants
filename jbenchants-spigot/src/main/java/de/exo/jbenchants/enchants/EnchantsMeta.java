@@ -2,10 +2,6 @@ package de.exo.jbenchants.enchants;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -16,19 +12,18 @@ import org.bukkit.potion.PotionType;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-public class EnchantsLore {
+public class EnchantsMeta {
 
-    private static EnchantsLore INSTANCE;
+    private static EnchantsMeta INSTANCE;
 
-    private EnchantsLore() {
+    private EnchantsMeta() {
     }
 
-    public static EnchantsLore getInstance() {
+    public static EnchantsMeta getInstance() {
         if (INSTANCE == null)
-            INSTANCE = new EnchantsLore();
+            INSTANCE = new EnchantsMeta();
         return INSTANCE;
     }
 

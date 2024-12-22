@@ -4,24 +4,15 @@ import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.enchants.EnchantsHandler;
 import de.exo.jbenchants.enchants.EnchantsItems;
-import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsMeta;
 import de.exo.jbenchants.enchants.EnchantsNBT;
 import de.exo.jbenchants.items.crystal.Crystal;
-import de.tr7zw.nbtapi.NBTItem;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
-
-import java.util.Objects;
-import java.util.Random;
 
 public class ItemMerger implements Listener {
 
     private static ItemMerger INSTANCE;
-    private ItemMerger() {
+    public ItemMerger() {
     }
     public static ItemMerger getInstance() {
         if (INSTANCE == null) INSTANCE = new ItemMerger();
@@ -29,7 +20,7 @@ public class ItemMerger implements Listener {
     }
 
     API api = Main.getAPI();
-    EnchantsLore lore = EnchantsLore.getInstance();
+    EnchantsMeta lore = EnchantsMeta.getInstance();
     EnchantsItems items = EnchantsItems.getInstance();
     EnchantsNBT nbt = EnchantsNBT.getInstance();
     EnchantsHandler handler = EnchantsHandler.getInstance();

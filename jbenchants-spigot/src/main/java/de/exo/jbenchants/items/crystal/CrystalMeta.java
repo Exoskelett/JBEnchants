@@ -42,7 +42,7 @@ public class CrystalMeta {
         ItemMeta meta = item.getItemMeta();
         meta.setLore(getCrystalLore(rarity, chance));
         meta.setDisplayName(api.getItemName("crystal").replace(":rarity:", api.getColor(rarity)+rarity.substring(0, 1).toUpperCase()+rarity.substring(1)));
-        meta.addEnchant(Enchantment.LUCK, 1, true);
+        meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(meta);
     }

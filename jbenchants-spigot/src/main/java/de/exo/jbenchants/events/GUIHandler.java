@@ -3,7 +3,7 @@ package de.exo.jbenchants.events;
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.enchants.EnchantsItems;
-import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsMeta;
 import de.exo.jbenchants.enchants.EnchantsNBT;
 import de.exo.jbenchants.enchants.EnchantsRegions;
 import de.exo.jbenchants.items.crystal.Crystal;
@@ -32,7 +32,7 @@ public class GUIHandler implements Listener {
 
     API api = Main.getAPI();
     EnchantsItems items = EnchantsItems.getInstance();
-    EnchantsLore lore = EnchantsLore.getInstance();
+    EnchantsMeta lore = EnchantsMeta.getInstance();
     EnchantsNBT nbt = EnchantsNBT.getInstance();
     EnchantsRegions regions = EnchantsRegions.getInstance();
     Crystal crystal = Crystal.getInstance();

@@ -31,28 +31,28 @@ public class RepairScrollHandler implements Listener {
     API api = Main.getAPI();
     private final EnchantsNBT enchantsNBT = EnchantsNBT.getInstance();
 
-    @EventHandler
-    public void onRepairScrollMerge(InventoryClickEvent event) {
-        try {
-            if (!event.getAction().equals(InventoryAction.SWAP_WITH_CURSOR)) return;
-            ItemStack origin = event.getCursor();
-            NBTItem originNbt = new NBTItem(origin);
-            ItemStack destination = event.getCurrentItem();
-            if (destination == null || !originNbt.hasTag("scroll") || Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
-            Player player = (Player) event.getWhoClicked();
-            if (!originNbt.hasTag("scroll")) return;
-            event.setCancelled(true);
-            double chance = (double) originNbt.getInteger("chance")/100;
-            if (Math.random() <= chance) {
-                enchantsNBT.repairTool(destination, getScrollDurability(originNbt.getString("scroll")));
-                player.setItemOnCursor(null);
-            } else {
-                player.setItemOnCursor(null);
-                player.sendMessage("This scroll sucked!");  // TBA
-            }
-        } catch (NullPointerException ignored) {
-        }
-    }
+//    @EventHandler
+//    public void onRepairScrollMerge(InventoryClickEvent event) {
+//        try {
+//            if (!event.getAction().equals(InventoryAction.SWAP_WITH_CURSOR)) return;
+//            ItemStack origin = event.getCursor();
+//            NBTItem originNbt = new NBTItem(origin);
+//            ItemStack destination = event.getCurrentItem();
+//            if (destination == null || !originNbt.hasTag("scroll") || Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
+//            Player player = (Player) event.getWhoClicked();
+//            if (!originNbt.hasTag("scroll")) return;
+//            event.setCancelled(true);
+//            double chance = (double) originNbt.getInteger("chance")/100;
+//            if (Math.random() <= chance) {
+//                enchantsNBT.repairTool(destination, getScrollDurability(originNbt.getString("scroll")));
+//                player.setItemOnCursor(null);
+//            } else {
+//                player.setItemOnCursor(null);
+//                player.sendMessage("This scroll sucked!");  // TBA
+//            }
+//        } catch (NullPointerException ignored) {
+//        }
+//    }
 
     public int getScrollDurability(String rarity) {
         switch (rarity) {

@@ -4,7 +4,7 @@ import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.enchants.EnchantsHandler;
 import de.exo.jbenchants.enchants.EnchantsItems;
-import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsMeta;
 import de.exo.jbenchants.enchants.EnchantsNBT;
 import de.tr7zw.nbtapi.NBTItem;
 import net.kyori.adventure.text.Component;
@@ -23,7 +23,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 public class CrystalHandler implements Listener {
     private static CrystalHandler INSTANCE;
@@ -45,7 +44,7 @@ public class CrystalHandler implements Listener {
 
     private final EnchantsHandler enchantsHandler = EnchantsHandler.getInstance();
     private final EnchantsItems enchantsItems = EnchantsItems.getInstance();
-    private final EnchantsLore enchantsLore = EnchantsLore.getInstance();
+    private final EnchantsMeta enchantsMeta = EnchantsMeta.getInstance();
     private final EnchantsNBT enchantsNBT = EnchantsNBT.getInstance();
 
     @EventHandler
@@ -69,34 +68,34 @@ public class CrystalHandler implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler
-    public void onCrystalMerge(InventoryClickEvent event) {
-        try {
-            if (!event.getAction().equals(InventoryAction.SWAP_WITH_CURSOR)) return;
-            ItemStack origin = event.getCursor();
-            NBTItem originNbt = new NBTItem(origin);
-            ItemStack destination = event.getCurrentItem();
-            if (destination == null || !originNbt.hasTag("scroll") || Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
-            NBTItem destinationNbt = new NBTItem(destination);
-            Player player = (Player) event.getWhoClicked();
-            if (!originNbt.hasTag("crystal") || enchantsNBT.getCategory(destination) == null || originNbt.getString("chance").split("-").length != 1) return;
-            if (enchantsHandler.getPossibleEnchants(player, destination, originNbt.getString("crystal")) != null) {
-                event.setCancelled(true);
-                double chance = (double) Integer.parseInt(originNbt.getString("chance")) / 100;
-                player.setItemOnCursor(null);
-                if (Math.random() <= chance) {
-                    nbt.setUsedCrystalChance(player, originNbt.getString("crystal"), Integer.parseInt(originNbt.getString("chance")));
-                    // String addedEnchant = crystal.unlockCrystal(player, destination, originNbt.getString("crystal"));
-                } else {
-                    player.sendMessage("§cYour crystal failed.");
-                }
-            } else {
-                event.setCancelled(true);
-                player.sendMessage("§cThere are no more enchantments of this tier left for you to get, please try different crystal rarities.");
-            }
-        } catch (NullPointerException ignored) {
-        }
-    }
+//    @EventHandler
+//    public void onCrystalMerge(InventoryClickEvent event) {
+//        try {
+//            if (!event.getAction().equals(InventoryAction.SWAP_WITH_CURSOR)) return;
+//            ItemStack origin = event.getCursor();
+//            NBTItem originNbt = new NBTItem(origin);
+//            ItemStack destination = event.getCurrentItem();
+//            if (destination == null || !originNbt.hasTag("scroll") || Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
+//            NBTItem destinationNbt = new NBTItem(destination);
+//            Player player = (Player) event.getWhoClicked();
+//            if (!originNbt.hasTag("crystal") || enchantsNBT.getCategory(destination) == null || originNbt.getString("chance").split("-").length != 1) return;
+//            if (enchantsHandler.getPossibleEnchants(player, destination, originNbt.getString("crystal")) != null) {
+//                event.setCancelled(true);
+//                double chance = (double) Integer.parseInt(originNbt.getString("chance")) / 100;
+//                player.setItemOnCursor(null);
+//                if (Math.random() <= chance) {
+//                    nbt.setUsedCrystalChance(player, originNbt.getString("crystal"), Integer.parseInt(originNbt.getString("chance")));
+//                    // String addedEnchant = crystal.unlockCrystal(player, destination, originNbt.getString("crystal"));
+//                } else {
+//                    player.sendMessage("§cYour crystal failed.");
+//                }
+//            } else {
+//                event.setCancelled(true);
+//                player.sendMessage("§cThere are no more enchantments of this tier left for you to get, please try different crystal rarities.");
+//            }
+//        } catch (NullPointerException ignored) {
+//        }
+//    }
 
     private void tryNaturalEnchant(Player player, ItemStack item, String enchant) { // adds enchant to item from crystal opening, if possible
         LevelEnchants level = LevelEnchants.getPlayerMaxEnchants(player);
@@ -104,7 +103,7 @@ public class CrystalHandler implements Listener {
             if (enchantsHandler.checkEnchantUpgradability(player, item, enchant)) {
                 enchantsNBT.addEnchantmentLevel(item, enchant, 1);
                 nbt.setUsedCrystalChance(player, api.getRarity(enchant), -1);
-                enchantsLore.updateLore(item);
+                enchantsMeta.updateLore(item);
                 player.updateInventory();
                 player.sendMessage("§a§l+ " + api.getColor(api.getRarity(enchant)) + api.getDisplayName(enchant)
                         + " §7has been added to your item.");

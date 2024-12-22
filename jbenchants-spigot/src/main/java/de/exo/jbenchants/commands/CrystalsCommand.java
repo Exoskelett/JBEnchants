@@ -2,12 +2,8 @@ package de.exo.jbenchants.commands;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.exo.jbenchants.enchants.EnchantsNBT;
 import de.exo.jbenchants.items.crystal.Crystal;
 import de.tr7zw.nbtapi.NBTEntity;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -22,7 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CrystalsCommand implements CommandExecutor, Listener {
@@ -44,38 +40,37 @@ public class CrystalsCommand implements CommandExecutor, Listener {
         if (item == null || !event.getView().getOriginalTitle().equals("§8Crystals")) return;
         event.setCancelled(true);
         if (event.getClickedInventory() == player.getInventory() || event.getCurrentItem().getType() != Material.getMaterial(api.getItemMaterial("crystal"))) return;
-        String rarity = event.getCurrentItem().getItemMeta().displayName().toString().split(" ")[0]
+        String rarity = event.getCurrentItem().getItemMeta().getDisplayName().split(" ")[0]
                 .substring(2).toLowerCase();
         player = (Player) event.getWhoClicked();
         if (getPlayerCrystals(player, rarity) > 0) {
             if (player.getInventory().firstEmpty() != -1) {
                 addPlayerCrystals(player, rarity, -1);
                 player.getInventory().addItem(crystal.getCrystal(rarity));
-                player.openInventory(new CrystalsCommand().getCrystalsInventory(player));
+                player.openInventory(getCrystalsInventory(player));
             } else
                 player.sendMessage("§cYou don't have enough space in your inventory.");
         }
     }
 
     public Inventory getCrystalsInventory(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, Component.text().color(NamedTextColor.DARK_GRAY).content("Crystals").build());
-        ItemStack crystal = new ItemStack(Material.getMaterial(api.getItemMaterial("crystal")));
+        Inventory inventory = Bukkit.createInventory(null, 27, "§8Crystals");
+        ItemStack crystal = new ItemStack(Material.NETHER_STAR);
         ItemMeta crystalMeta = crystal.getItemMeta();
+        List<String> lore = new ArrayList<>();
         String[] rarities = {"Common", "Rare", "Epic", "Legendary"};
         for (int i = 0; i < 4; i++) {
-            TextColor color = TextColor.fromHexString(api.getColor(rarities[i].toLowerCase()));
-            crystalMeta.displayName(Component.text().color(color).content(rarities[i] + " Crystal").build());
-            List<Component> loreComponents = Arrays.asList(
-                Component.text().color(NamedTextColor.YELLOW).content("Amount: ").append(Component.text().color(NamedTextColor.LIGHT_PURPLE).content(String.valueOf(getPlayerCrystals(player, rarities[i].toLowerCase())))).build(),
-                Component.text().color(NamedTextColor.GRAY).content("Click to claim ").append(Component.text().color(NamedTextColor.DARK_PURPLE).content("x1 ")).append(Component.text().color(color).content(rarities[i] + " Crystal")).append(Component.text().color(NamedTextColor.GRAY).content("!")).build()
-            );
-            crystalMeta.lore(loreComponents);
+            crystalMeta.setDisplayName(api.getColor(rarities[i].toLowerCase()) + rarities[i] + " Crystal");
+            lore.clear();
+            lore.add("§eAmount: §d" + getPlayerCrystals(player, rarities[i].toLowerCase()));
+            lore.add("§7Click to claim §bx1 " + api.getColor(rarities[i].toLowerCase()) + rarities[i] + " Crystal§7!");
+            crystalMeta.setLore(lore);
             crystal.setItemMeta(crystalMeta);
             inventory.setItem(10 + i * 2, crystal);
         }
         ItemStack spacer = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta spacerMeta = spacer.getItemMeta();
-        spacerMeta.displayName(Component.text().content(" ").build());
+        spacerMeta.setDisplayName(" ");
         spacer.setItemMeta(spacerMeta);
         for (int i = 0; i < inventory.getSize(); i++) {
             if (inventory.getItem(i) == null) inventory.setItem(i, spacer);

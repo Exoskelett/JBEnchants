@@ -12,7 +12,7 @@ public class CleanserNBT {
     private CleanserNBT() {
     }
 
-    protected static CleanserNBT getInstance() {
+    public static CleanserNBT getInstance() {
         if (INSTANCE == null)
             INSTANCE = new CleanserNBT();
         return INSTANCE;
@@ -32,9 +32,9 @@ public class CleanserNBT {
             entity.getPersistentDataContainer().removeKey("used_cleanser");
     }
 
-    public String getUsedCleanserChance(Player player) {
+    public int getUsedCleanserChance(Player player) {
         NBTCompound entity = new NBTEntity(player).getPersistentDataContainer();
-        if (entity.hasTag("used_cleanser")) return entity.getInteger("used_cleanser").toString();
-        return null;
+        if (entity.hasTag("used_cleanser")) return entity.getInteger("used_cleanser");
+        return -1;
     }
 }

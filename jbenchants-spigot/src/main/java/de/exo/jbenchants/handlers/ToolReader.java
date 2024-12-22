@@ -3,7 +3,7 @@ package de.exo.jbenchants.handlers;
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.enchants.EnchantsHandler;
-import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsMeta;
 import de.exo.jbenchants.enchants.EnchantsNBT;
 import de.exo.jbenchants.enchants.EnchantsRegions;
 import org.bukkit.Material;
@@ -31,7 +31,7 @@ public class ToolReader implements Listener {
 
     API api = Main.getAPI();
     EnchantsNBT nbt = EnchantsNBT.getInstance();
-    EnchantsLore lore = EnchantsLore.getInstance();
+    EnchantsMeta lore = EnchantsMeta.getInstance();
     EnchantsHandler handler = EnchantsHandler.getInstance();
     EnchantsRegions regions = EnchantsRegions.getInstance();
 

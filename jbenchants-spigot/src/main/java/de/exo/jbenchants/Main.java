@@ -5,8 +5,8 @@ import de.exo.jbenchants.commands.admin.*;
 import de.exo.jbenchants.enchants.EnchantsHandler;
 import de.exo.jbenchants.events.GUIHandler;
 import de.exo.jbenchants.handlers.ItemUpdater;
-import de.exo.jbenchants.events.ItemMerger;
 import de.exo.jbenchants.handlers.*;
+import de.exo.jbenchants.items.ItemMerger;
 import de.exo.jbenchants.items.cleanser.CleanserHandler;
 import de.exo.jbenchants.items.crystal.CrystalHandler;
 import de.exo.jbenchants.items.dust.DustHandler;
@@ -41,7 +41,7 @@ public class Main extends JavaPlugin {
 
             PluginManager pluginManager = Bukkit.getPluginManager();
             pluginManager.registerEvents(GUIHandler.getInstance(), this);
-            pluginManager.registerEvents(ItemMerger.getInstance(), this);
+//            pluginManager.registerEvents(ItemMerger.getInstance(), this);
             pluginManager.registerEvents(ItemUpdater.getInstance(), this);
             pluginManager.registerEvents(ToolReader.getInstance(), this);
             pluginManager.registerEvents(EnchantsHandler.getInstance(), this);
@@ -70,6 +70,7 @@ public class Main extends JavaPlugin {
             // Misc
             pluginManager.registerEvents(new CrystalsCommand(), this);
             pluginManager.registerEvents(new EnchantsCommand(), this);
+            pluginManager.registerEvents(new ItemMerger(), this);
             getCommand("jbe").setExecutor(new jbe());
             getCommand("jbe").setTabCompleter(new jbe());
             getCommand("jbdebug").setExecutor(new jbdebug());

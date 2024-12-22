@@ -22,7 +22,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -42,7 +41,7 @@ public class EnchantsHandler implements Listener {
 
     API api = Main.getAPI();
     EnchantsNBT nbt = EnchantsNBT.getInstance();
-    EnchantsLore lore = EnchantsLore.getInstance();
+    EnchantsMeta lore = EnchantsMeta.getInstance();
     EnchantsRegions regions = EnchantsRegions.getInstance();
 
     public void proccToolEnchant(Player player, ItemStack tool, List<String> list, Block block)

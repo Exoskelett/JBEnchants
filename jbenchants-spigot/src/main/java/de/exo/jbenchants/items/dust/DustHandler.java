@@ -31,35 +31,35 @@ public class DustHandler implements Listener {
     API api = Main.getAPI();
     private final Crystal crystal = Crystal.getInstance();
 
-    @EventHandler
-    public void onDustMerge(InventoryClickEvent event) {
-        try {
-            if (!event.getAction().equals(InventoryAction.SWAP_WITH_CURSOR)) return;
-            ItemStack origin = event.getCursor();
-            NBTItem originNbt = new NBTItem(origin);
-            ItemStack destination = event.getCurrentItem();
-            if (destination == null || !originNbt.hasTag("dust") || Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
-            NBTItem destinationNbt = new NBTItem(destination);
-            Player player = (Player) event.getWhoClicked();
-            if (destinationNbt.getString("chance").split("-").length == 1) {
-                if (Objects.equals(originNbt.getString("dust"), destinationNbt.getString("crystal"))) {
-                    event.setCancelled(true);
-                    int oldChance = Integer.parseInt(destinationNbt.getString("chance"));
-                    int newChance = oldChance + originNbt.getInteger("chance");
-                    if (newChance > 100) newChance = 100;
-                    ItemStack newCrystal = crystal.getCrystal(destinationNbt.getString("crystal"), newChance);
-                    destination.setAmount(destination.getAmount()-1);
-                    player.getInventory().setItem(event.getSlot(), destination);
-                    if (player.getInventory().getItem(event.getSlot()) == null) {
-                        player.getInventory().setItem(event.getSlot(), newCrystal);
-                    } else
-                        player.getInventory().addItem(newCrystal);
-                    player.setItemOnCursor(null);
-                }
-            }
-        } catch (NullPointerException ignored) {
-        }
-    }
+//    @EventHandler
+//    public void onDustMerge(InventoryClickEvent event) {
+//        try {
+//            if (!event.getAction().equals(InventoryAction.SWAP_WITH_CURSOR)) return;
+//            ItemStack origin = event.getCursor();
+//            NBTItem originNbt = new NBTItem(origin);
+//            ItemStack destination = event.getCurrentItem();
+//            if (destination == null || !originNbt.hasTag("dust") || Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
+//            NBTItem destinationNbt = new NBTItem(destination);
+//            Player player = (Player) event.getWhoClicked();
+//            if (destinationNbt.getString("chance").split("-").length == 1) {
+//                if (Objects.equals(originNbt.getString("dust"), destinationNbt.getString("crystal"))) {
+//                    event.setCancelled(true);
+//                    int oldChance = Integer.parseInt(destinationNbt.getString("chance"));
+//                    int newChance = oldChance + originNbt.getInteger("chance");
+//                    if (newChance > 100) newChance = 100;
+//                    ItemStack newCrystal = crystal.getCrystal(destinationNbt.getString("crystal"), newChance);
+//                    destination.setAmount(destination.getAmount()-1);
+//                    player.getInventory().setItem(event.getSlot(), destination);
+//                    if (player.getInventory().getItem(event.getSlot()) == null) {
+//                        player.getInventory().setItem(event.getSlot(), newCrystal);
+//                    } else
+//                        player.getInventory().addItem(newCrystal);
+//                    player.setItemOnCursor(null);
+//                }
+//            }
+//        } catch (NullPointerException ignored) {
+//        }
+//    }
 
     public boolean updateDust(ItemStack item) {
         NBTItem nbti = new NBTItem(item);

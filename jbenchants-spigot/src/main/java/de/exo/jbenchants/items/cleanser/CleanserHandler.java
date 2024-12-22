@@ -2,7 +2,7 @@ package de.exo.jbenchants.items.cleanser;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsMeta;
 import de.exo.jbenchants.enchants.EnchantsNBT;
 import de.tr7zw.nbtapi.NBTItem;
 import net.kyori.adventure.text.Component;
@@ -36,53 +36,53 @@ public class CleanserHandler implements Listener {
     private final CleanserGUI gui = CleanserGUI.getInstance();
     private final CleanserNBT nbt = CleanserNBT.getInstance();
     private final EnchantsNBT enchantsNBT = EnchantsNBT.getInstance();
-    private final EnchantsLore enchantsLore = EnchantsLore.getInstance();
+    private final EnchantsMeta enchantsMeta = EnchantsMeta.getInstance();
 
-    @EventHandler
-    public void onCleanserMerge(InventoryClickEvent event) {
-        try {
-            if (!event.getAction().equals(InventoryAction.SWAP_WITH_CURSOR)) return;
-            ItemStack origin = event.getCursor();
-            NBTItem originNbt = new NBTItem(origin);
-            ItemStack destination = event.getCurrentItem();
-            if (destination == null || !originNbt.hasTag("scroll") || Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
-            NBTItem destinationNbt = new NBTItem(destination);
-            Player player = (Player) event.getWhoClicked();
-            if (!originNbt.hasTag("cleanser") || !destinationNbt.hasTag("jbenchants")) return;
-            event.setCancelled(true);
-            double chance = (double) originNbt.getInteger("cleanser")/100;
-            if (Math.random() <= chance) {
-                nbt.setUsedCleanserChance(player, originNbt.getInteger("cleanser"));
-                player.setItemOnCursor(null);
-                player.openInventory(gui.getCleanserInventory(destination));
-                player.sendMessage("§cYour cleanser activated.");
-            } else {
-                player.setItemOnCursor(null);
-                String randomEnchant = enchantsNBT.getEnchants(destination).get(new Random().nextInt(enchantsNBT.getEnchants(destination).size()));
-                enchantsNBT.removeEnchantment(destination, randomEnchant);
-                enchantsLore.updateLore(destination);
-                player.sendMessage("§cYour cleanser failed and removed a random enchantment: "+api.getColor(api.getRarity(randomEnchant))+api.getDisplayName(randomEnchant));  // TBA
-            }
-        } catch (NullPointerException ignored) {
-        }
-    }
+//    @EventHandler
+//    public void onCleanserMerge(InventoryClickEvent event) {
+//        try {
+//            if (!event.getAction().equals(InventoryAction.SWAP_WITH_CURSOR)) return;
+//            ItemStack origin = event.getCursor();
+//            NBTItem originNbt = new NBTItem(origin);
+//            ItemStack destination = event.getCurrentItem();
+//            if (destination == null || !originNbt.hasTag("scroll") || Objects.requireNonNull(event.getCursor()).getAmount() != 1) return;
+//            NBTItem destinationNbt = new NBTItem(destination);
+//            Player player = (Player) event.getWhoClicked();
+//            if (!originNbt.hasTag("cleanser") || !destinationNbt.hasTag("jbenchants")) return;
+//            event.setCancelled(true);
+//            double chance = (double) originNbt.getInteger("cleanser")/100;
+//            if (Math.random() <= chance) {
+//                nbt.setUsedCleanserChance(player, originNbt.getInteger("cleanser"));
+//                player.setItemOnCursor(null);
+//                player.openInventory(gui.getCleanserInventory(destination));
+//                player.sendMessage("§cYour cleanser activated.");
+//            } else {
+//                player.setItemOnCursor(null);
+//                String randomEnchant = enchantsNBT.getEnchants(destination).get(new Random().nextInt(enchantsNBT.getEnchants(destination).size()));
+//                enchantsNBT.removeEnchantment(destination, randomEnchant);
+//                enchantsMeta.updateLore(destination);
+//                player.sendMessage("§cYour cleanser failed and removed a random enchantment: "+api.getColor(api.getRarity(randomEnchant))+api.getDisplayName(randomEnchant));  // TBA
+//            }
+//        } catch (NullPointerException ignored) {
+//        }
+//    }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         ItemStack item = event.getCurrentItem();
         Player player = (Player) event.getWhoClicked();
-        if (item == null || !event.getView().getOriginalTitle().equals("§8Cleanser §7§o(Click to remove)") || event.getClickedInventory() == player.getInventory()) return;
+        if (item == null || !event.getView().getOriginalTitle().equals("§8Cleanser §7§o(Click to remove)")) return;
         event.setCancelled(true);
+        if (event.getClickedInventory() == player.getInventory()) return;
         ItemStack enchItem = event.getClickedInventory().getItem(event.getClickedInventory().getSize() - 1);
-        List<Component> loreComponents = enchItem.lore();
-        if (loreComponents != null && event.getSlot() < loreComponents.size()) {
-            String enchantName = loreComponents.get(event.getSlot()).toString().substring(2);
+        List<String> enchants = enchantsMeta.sortEnchants(enchantsNBT.getEnchants(enchItem));
+        if (event.getSlot() < enchants.size()) {
             for (int i = 0; i < player.getInventory().getSize(); i++) {
                 ItemStack count = player.getInventory().getItem(i);
                 if (count != null && count.equals(enchItem)) {
-                    enchantsNBT.removeEnchantment(enchItem, enchantName);
-                    nbt.setUsedCleanserChance(player, -1);
-                    enchantsLore.updateLore(enchItem);
+                    enchantsNBT.removeEnchantment(enchItem, enchants.get(event.getSlot()).substring(2));
+                    enchantsMeta.updateLore(enchItem);
+                    nbt.setUsedCleanserChance(player,  -1);
                     player.getInventory().setItem(i, enchItem);
                     player.getOpenInventory().close();
                     return;
@@ -96,8 +96,8 @@ public class CleanserHandler implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
-        if (!event.getView().getOriginalTitle().equals("§8Cleanser §7§o(Click to remove)") || Objects.equals(nbt.getUsedCleanserChance(player), "-1")) return;
-        player.getInventory().addItem(cleanser.getCleanser(Integer.parseInt(nbt.getUsedCleanserChance(player))));
+        if (!event.getView().getOriginalTitle().equals("§8Cleanser §7§o(Click to remove)") || nbt.getUsedCleanserChance(player) != -1) return;
+        player.getInventory().addItem(cleanser.getCleanser(nbt.getUsedCleanserChance(player)));
         nbt.setUsedCleanserChance(player, -1);
     }
 

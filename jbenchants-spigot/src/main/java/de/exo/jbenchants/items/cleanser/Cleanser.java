@@ -36,8 +36,6 @@ public class Cleanser {
     public ItemStack getCleanserEnchantInformation(ItemStack item, String name) {
         ItemStack enchInfo = new ItemStack(Material.getMaterial(api.getEnchantmentMaterial(name)));
         meta.setCleanserEnchantmentInfoMeta(enchInfo, item, name);
-        enchInfo.setItemMeta(enchInfo.getItemMeta());
-        enchInfo.getItemFlags().add(ItemFlag.HIDE_ATTRIBUTES);
         return enchInfo;
     }
 }

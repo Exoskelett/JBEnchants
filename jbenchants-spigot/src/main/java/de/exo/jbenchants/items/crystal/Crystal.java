@@ -2,18 +2,8 @@ package de.exo.jbenchants.items.crystal;
 
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
-import de.exo.jbenchants.events.GUIHandler;
-import de.exo.jbenchants.enchants.EnchantsHandler;
-import de.exo.jbenchants.enchants.EnchantsItems;
-import de.exo.jbenchants.enchants.EnchantsLore;
-import de.exo.jbenchants.enchants.EnchantsNBT;
 import org.bukkit.Material;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.Objects;
 
 public class Crystal {
     private static Crystal INSTANCE;

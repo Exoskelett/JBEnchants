@@ -39,10 +39,10 @@ public class CleanserMeta {
 
     public void setCleanserMeta(ItemStack item, int chance) {
         ItemMeta meta = item.getItemMeta();
-        meta.addEnchant(Enchantment.LUCK, 1, true);
-        item.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.setLore(getCleanserLore(chance));
         meta.setDisplayName("§d" + api.getItemName("cleanser"));
+        meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, 1, true);
+        item.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(meta);
     }
 
@@ -57,6 +57,8 @@ public class CleanserMeta {
         }
         meta.setLore(lore);
         meta.setDisplayName(api.getColor(api.getRarity(name))+"§n"+api.getDisplayName(name));
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(meta);
     }
 }

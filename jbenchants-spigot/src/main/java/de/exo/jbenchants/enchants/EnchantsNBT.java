@@ -3,8 +3,6 @@ package de.exo.jbenchants.enchants;
 import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.tr7zw.nbtapi.NBTBlock;
-import de.tr7zw.nbtapi.NBTCompound;
-import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
 import net.kyori.adventure.text.Component;
 
@@ -172,7 +170,7 @@ public class EnchantsNBT {
         ItemMeta meta = item.getItemMeta();
         List<Component> lore = meta != null ? meta.lore() : null;
         if (!nbti.hasTag("jbenchants") && lore != null && item.getType() != Material.NETHER_STAR && item.getType() != Material.SUGAR && item.getType() != Material.GUNPOWDER && item.getType() != Material.PAPER) {
-            List<Integer> enchantLoreSlots = EnchantsLore.getInstance().getEnchantmentLoreSlots(item);
+            List<Integer> enchantLoreSlots = EnchantsMeta.getInstance().getEnchantmentLoreSlots(item);
             if (enchantLoreSlots == null) return false;
             boolean prefix = lore.get(0).toString().split(" ").length == 3;
             for (Integer enchantLoreSlot : enchantLoreSlots) {  // add enchants

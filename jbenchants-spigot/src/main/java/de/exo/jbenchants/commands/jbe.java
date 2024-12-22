@@ -4,7 +4,7 @@ import de.exo.jbenchants.API;
 import de.exo.jbenchants.Main;
 import de.exo.jbenchants.enchants.EnchantsHandler;
 import de.exo.jbenchants.enchants.EnchantsItems;
-import de.exo.jbenchants.enchants.EnchantsLore;
+import de.exo.jbenchants.enchants.EnchantsMeta;
 import de.exo.jbenchants.enchants.EnchantsNBT;
 import org.bukkit.Material;
 import org.bukkit.command.*;
@@ -19,7 +19,7 @@ import java.util.List;
 public class jbe implements CommandExecutor, TabCompleter {
     API api = Main.getAPI();
     EnchantsNBT nbt = EnchantsNBT.getInstance();
-    EnchantsLore lore = EnchantsLore.getInstance();
+    EnchantsMeta lore = EnchantsMeta.getInstance();
     EnchantsHandler handler = EnchantsHandler.getInstance();
     EnchantsItems items = EnchantsItems.getInstance();
 
@@ -176,7 +176,7 @@ public class jbe implements CommandExecutor, TabCompleter {
                                 List<String> enchants = new ArrayList<>();
                                 try {
                                     enchants = api.getEnchantments(nbt.getCategory(item));
-                                } catch (CommandException ignored) { }
+                                } catch (Exception ignored) { }
                                 if (!enchants.isEmpty()) {
                                     switch (args[1]) {
                                         case "add", "set":
