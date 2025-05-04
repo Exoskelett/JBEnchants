@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="45.131.111.150" uuid="af6b751b-dd50-41ea-b923-a17035dd21c8">
+    <data-source source="LOCAL" name="jbenchants@193.141.60.208" uuid="5ee8d48c-16bc-4431-87ac-d3a2c753b954">
       <driver-ref>mariadb</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mariadb://45.131.111.150:3306/jbenchants</jdbc-url>
+      <jdbc-url>jdbc:mariadb://193.141.60.208:3306/jbenchants</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
